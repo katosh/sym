@@ -9,7 +9,7 @@ mrad = 0.1  # relative radius for mean shift (1 is the whole space)
 mres = 2000 # resolution for Mean Shift
 
 scene = bpy.context.scene   # for visualisation
-bpy.ops.object.delete()	# deleting the stubit cube
+bpy.context.object.delete()	# deleting the stubit cube
 
 bmesh.types.BMesh.free
 
