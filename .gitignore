@@ -3,6 +3,7 @@
 
 # vim Abfall
 .*.swp[po]
+*.swp
 
 # blender files
 *.blend*

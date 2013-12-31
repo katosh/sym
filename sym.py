@@ -20,6 +20,10 @@ import transformations as tr
 tr.mktransfs()  # make/fill transformation space
 tr.plotr()      # plotting the transformation space for refletions
 
-import clustering
+import clustering as cl
+cl.mkrgrid()
+# cl.showhemisphere()
+cl.rmeanshift()
+cl.showrlayer(0)
 
 import verification

@@ -30,3 +30,6 @@ sfaces  = []    # hemisphere faces for visualization
 ### for clustering
 mrad = 0.08	    # relative radius for mean shift (1 is the whole space)
 mres = 50	    # resolution for Mean Shift
+rgrid = []      # grid for reflection space
+rsgrid = []     # grid for reflection space in just one offsetlayer
+sfaces = []     # faces of hemisphere for visualization

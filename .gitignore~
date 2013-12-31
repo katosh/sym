@@ -1,8 +1,0 @@
-# eclipse Abfall
-.metadata*
-
-# vim Abfall
-.*.swp[po]
-
-# blender files
-*.blend*
