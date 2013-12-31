@@ -136,7 +136,7 @@ for i in range(1,4):
     v.xyz = (i==1,i==2,i==3)
     sgrid.append(v)
 
-grid = []
+grid = sgrid
 
 ## show grid in 3-d view and get faces of sphere-surface for later visualisation ##
 
