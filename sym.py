@@ -4,12 +4,13 @@ import math
 from mathutils import Vector
 import code
 
-pc = 1.5    # Pruning limit for curvature
-mrad = 0.1  # relative radius for mean shift (1 is the whole space)
-mres = 2000 # resolution for Mean Shift
+pc = 1.5	# Pruning limit for curvature
+plimit = 0.1	# limit of relative curvature difference for pairing
+mrad = 0.08	# relative radius for mean shift (1 is the whole space)
+mres = 2000	# resolution for Mean Shift
 
 scene = bpy.context.scene   # for visualisation
-bpy.ops.object.delete()	# deleting the stubit cube
+bpy.ops.object.delete()	# deleting the stupid cube
 
 bmesh.types.BMesh.free
 
@@ -69,7 +70,7 @@ moff = 0        # maximal reflectation plane offset
 
 for i,p in enumerate(sigs):
     k=i+1
-    while (k < laenge) and (abs( 1 - (sigs[k].curv / p.curv) )) < 0.3 and (p.co-sigs[k].co).length != 0 : # only pair similar curvatures
+    while (k < laenge) and (abs( 1 - (sigs[k].curv / p.curv) )) < plimit and (p.co-sigs[k].co).length != 0 : # only pair similar curvatures
         this = transf()
         this.p=p
         this.q=sigs[k]
@@ -118,10 +119,10 @@ for k in range(Nu,N):   # just halfe shpere since parallel normals are equivalen
 # add normals perfectly parallel to axis because such cases ofte ocurr
 for i in range(1,4):
     v=svector()
-    v.xyz = ((i==1)*1,(i==2)*1,(i==3)*1)
+    v.xyz = (i==1,i==2,i==3)
     grid.append(v)
 
-## show grid in 3-d view and get faces of surface for later visualisation ##
+## show grid in 3-d view and get faces of sphere-surface for later visualisation ##
 
 # detour over mesh to create bmesh from a list of vertecis
 me = bpy.data.meshes.new("grid")        # create a new mesh  
@@ -140,13 +141,11 @@ for f in sphere.faces:
     sfaces.append(points)
 
 """
-# show sphere
+# show sphere in 3d-view
 sphere.to_mesh(me)
 bpy.context.scene.objects.link(ob)      # Link object to scene 
 me.update() 
 """
-
-
 
 
 # calculate density for each point of the grid
