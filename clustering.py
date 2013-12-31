@@ -90,7 +90,8 @@ def rmeanshift():
             diffa = math.pi - abs(math.pi - v.angle(t.rnor)) # angle between the normals ignoring its sign
             diffo = abs(v.roff - t.roff)	# difference in reflectation offset
             # linear weight looks like __/\__ where amw/omw is the maximal distance
-            v.dens += max( 0 , (amw - diffa)/amw + (omw - diffo)/omw)
+            # v.dens += max( 0 , (amw - diffa)/amw + (omw - diffo)/omw)
+            v.dens += max( 0 , (amw - diffa)/amw)   # ignoring offset
         v.dens = v.dens/g.ntrans  # normalization
 
     # test = g.rgrid.copy()
@@ -104,7 +105,7 @@ def showrlayer(n):
     model = []
     for v in g.rsgrid:
         m = Vector()
-        m.xyz = v.xyz*v.dens*10
+        m.xyz = v.xyz*v.dens*g.mres
         model.append(m)  
     global me
     global ob
