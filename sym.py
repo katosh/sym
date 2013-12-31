@@ -97,14 +97,28 @@ for i,p in enumerate(sigs):
     
 ### CLUSTERING ###
 
-# for reflection
+
+
+"""------------------------------------------------------------------------- 
+				REFLECTION
+We generadte a descretazation of the transformation space and call it 'grid'.
+We achieve that by first generating a grid over half a unit sphere where
+each point represents a direction of a reflectation normal. Then we copy
+this hemisphere for each level of reflectation offset to the grid.
+Then we calculate the density of transformations for each point of the grid.
+-------------------------------------------------------------------------"""
 
 # even point grid on the sphere for clustering of reflection normal direction
 # https://perswww.kuleuven.be/~u0017946/publications/Papers97/art97a-Saff-Kuijlaars-MI/Saff-Kuijlaars-MathIntel97.pdf
-class svector(Vector):  # add density parameter to Vector()
-    dens=0
+
+# adding parameters to our gid vector by estanding the Vector() class
+class svector(Vector):  
+    dens=0	# add density parameter to Vector()
+    roff=0	# add reflectation plane offset
+
 Nu = mres # resolution / number of directions to analyse weight
-grid = []
+# subgrid that just holds the reflectation direction without the reflectation offset
+sgrid = []	
 N=Nu*2
 for k in range(Nu,N):   # just halfe shpere since parallel normals are equivalent
     h = -1 + (2*(k-1)/(N-1))
@@ -120,7 +134,9 @@ for k in range(Nu,N):   # just halfe shpere since parallel normals are equivalen
 for i in range(1,4):
     v=svector()
     v.xyz = (i==1,i==2,i==3)
-    grid.append(v)
+    sgrid.append(v)
+
+grid = []
 
 ## show grid in 3-d view and get faces of sphere-surface for later visualisation ##
 
@@ -152,10 +168,10 @@ me.update()
 ntrans = len(transfs)
 for v in grid:
     for t in transfs:
-        diff = math.pi - abs(math.pi - v.angle(t.rnor)) # angle between the normals ignoring sign
+        diff = math.pi - abs(math.pi - v.angle(t.rnor)) # angle between the normals ignoring its sign
         # linear weight looks like __/\__ where mrad*math.pi is the maximal distance
         v.dens += max( 0 , (mrad*math.pi - diff)/mrad*math.pi )
-    v.dens = v.dens/ntrans  # normalazation
+    v.dens = v.dens/ntrans  # normalization
 
 # show density by hight on the half sphere in 3-d view
 model = []

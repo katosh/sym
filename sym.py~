@@ -6,7 +6,7 @@ import code
 
 pc = 1.5	# Pruning limit for curvature
 plimit = 0.1	# limit of relative curvature difference for pairing
-mrad = 0.05	# relative radius for mean shift (1 is the whole space)
+mrad = 0.08	# relative radius for mean shift (1 is the whole space)
 mres = 2000	# resolution for Mean Shift
 
 scene = bpy.context.scene   # for visualisation
@@ -152,10 +152,10 @@ me.update()
 ntrans = len(transfs)
 for v in grid:
     for t in transfs:
-        diff = math.pi - abs(math.pi - v.angle(t.rnor)) # angle between the normals ignoring sign
+        diff = math.pi - abs(math.pi - v.angle(t.rnor)) # angle between the normals ignoring its sign
         # linear weight looks like __/\__ where mrad*math.pi is the maximal distance
         v.dens += max( 0 , (mrad*math.pi - diff)/mrad*math.pi )
-    v.dens = v.dens/ntrans  # normalazation
+    v.dens = v.dens/ntrans  # normalization
 
 # show density by hight on the half sphere in 3-d view
 model = []
