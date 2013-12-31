@@ -6,3 +6,7 @@
 
 # blender files
 *.blend*
+
+# strange stuff
+*~
+__pycache__
