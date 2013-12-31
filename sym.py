@@ -23,6 +23,9 @@ import clustering as cl
 cl.mkrgrid()        # make grid for reflectation space
 # cl.showhemisphere()   # show one offset layer of the grid
 cl.rmeanshift()     # calculate the density of transformations for each grid point
-cl.showrlayer(0)    # show one offset layer with hight (or distance to (0,0,0)) representig density
+#cl.showrlayer(0)    # show one offset layer with hight (or distance to (0,0,0)) representig density
+cl.showmrlayer()     # show the offset layer where the density reaches its maximum
+
+# code.interact(local=locals())   # interactive variable test
 
 import verification

@@ -21,14 +21,14 @@ this hemisphere for each level of reflectation offset to the grid.
 Then we calculate the density of transformations for each point of the grid.
 -------------------------------------------------------------------------"""
 
+# adding parameters to our gid vector by extanding the Vector() class
+class svector(Vector):  
+    dens=0	# add density parameter to Vector()
+    roff=0	# add reflectation plane offset
+
 def mkrgrid():  # make grid for reflection space
     # even point grid on the sphere for clustering of reflection normal direction
     # https://perswww.kuleuven.be/~u0017946/publications/Papers97/art97a-Saff-Kuijlaars-MI/Saff-Kuijlaars-MathIntel97.pdf
-
-    # adding parameters to our gid vector by extanding the Vector() class
-    class svector(Vector):  
-        dens=0	# add density parameter to Vector()
-        roff=0	# add reflectation plane offset
 
     ### make hemisphere out of evenly spaced points
     Nu = 2*g.mres # resolution / number of directions to analyse weight
@@ -66,10 +66,10 @@ def mkrgrid():  # make grid for reflection space
         g.sfaces.append(points)
 
     ### make grid out of hemisphere and reflectation offset
-    h = g.moff/g.mres	# steps in reflectation offset
+    h = (g.moff-g.mioff)/g.mres	# steps in reflectation offset
     for i in range(0,g.mres):
         for v in g.rsgrid:
-            v.roff = i*h
+            v.roff = i*h + g.mioff
             g.rgrid.append(v)
 
 #### show sphere in 3d-view
@@ -80,8 +80,10 @@ def showhemisphere():
     me.update() 
 
 ### mean shift for reflectation space
+maximum = svector()
 def rmeanshift():
     # calculate density for each point of the grid
+    global maximum
     g.ntrans = len(g.transfs)
     amw = g.mrad*math.pi		# angle mean width (search radius)
     omw = g.mrad*g.moff			# offset mean width (search radius)
@@ -90,11 +92,19 @@ def rmeanshift():
             diffa = math.pi - abs(math.pi - v.angle(t.rnor)) # angle between the normals ignoring its sign
             diffo = abs(v.roff - t.roff)	# difference in reflectation offset
             # linear weight looks like __/\__ where amw/omw is the maximal distance
-            # v.dens += max( 0 , (amw - diffa)/amw + (omw - diffo)/omw)
-            v.dens += max( 0 , (amw - diffa)/amw)   # ignoring offset
+            v.dens += max( 0 , (amw - diffa)/amw + (omw - diffo)/omw)
+            # v.dens += max( 0 , (amw - diffa)/amw)   # ignoring offset
         v.dens = v.dens/g.ntrans  # normalization
+        if v.dens > maximum.dens:
+            maximum=v
 
-    # test = g.rgrid.copy()
+### show offset layer with maximum
+def showmrlayer():
+    n = round((maximum.roff/g.moff)*g.mres)
+    showrlayer(n)
+    print('highest density at an offset of ',maximum.roff)
+    print('this is level ',n,' of ',g.mres)
+    print('the maximal offset is ',g.moff)
 
 ### show density by hight on the hemisphere in 3-d view for the refectations on offset layer n
 def showrlayer(n):

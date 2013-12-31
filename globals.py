@@ -25,6 +25,7 @@ laenge = 0      # length of signature list
 transfs = []    # transformation space
 ntrans  = 0     # number of transformations
 moff    = 0     # maximal reflection plane offset
+mioff   = 0     # minimal reflection plane offset
 sfaces  = []    # hemisphere faces for visualization
 
 ### for clustering

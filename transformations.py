@@ -16,6 +16,7 @@ class transf:
     q=0                     # Vertex 2
 
 def mktransfs():
+    first = True
     for i,p in enumerate(g.sigs):
         k=i+1
         while (k < g.laenge) and (abs( 1 - (g.sigs[k].curv / p.curv) )) < g.plimit and (p.co-g.sigs[k].co).length != 0 : # only pair similar curvatures
@@ -36,7 +37,10 @@ def mktransfs():
             else:
                 alpha           = abs(hypertenuse.angle(this.rnor) - (math.pi/2))
                 this.roff       = math.sin(alpha) * hypertenuse.length
-                g.moff            = max( this.roff , g.moff )
+                g.moff          = max( this.roff , g.moff )
+                if first:
+                    g.mioff     = this.roff
+                g.mioff         = min( this.roff , g.mioff )
             
             g.transfs.append(this)
             k=k+1
@@ -57,5 +61,3 @@ def plotr():
     pmesh.from_pydata(plot,[],[])
     ob_plot = bpy.data.objects.new("Plot", pmesh)     
     g.scene.objects.link(ob_plot)
-        
-    
