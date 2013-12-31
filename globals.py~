@@ -1,7 +1,9 @@
-# global variables
 import bpy
 import bmesh
 bmesh.types.BMesh.free
+
+### global variables
+
 bm=bmesh.new()  # THE GEOMETRY
 scene = bpy.context.scene   # for visualisation
 
@@ -25,3 +27,4 @@ laenge = 0      # length of signature list
 transfs = []    # transformation space
 ntrans  = 0     # number of transformations
 moff    = 0     # maximal reflection plane offset
+sfaces  = []    # hemisphere faces for visualization
