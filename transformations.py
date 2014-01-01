@@ -49,6 +49,7 @@ def mktransfs():
                 g.mioff         = min( this.roff , g.mioff )
             g.transfs.append(this)
             k+=1
+    g.ntransfs = len(g.transfs)
 
 ## plotting transformation space for reflectation
 def plotr():

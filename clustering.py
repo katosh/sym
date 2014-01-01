@@ -85,36 +85,64 @@ def showhemisphere():
     g.scene.objects.link(ob)      # Link object to g.scene 
     me.update() 
 
+
+from transformations import transf
+class Maximum:
+    grid = svector() # gridpoint
+    t = transf() # closest existing transformation
+    dist = None # distence of transformation to gridpoint
+    weight = 0  # weight in density function
+
+mt = Maximum()  # saves best transformation for a grid point
+m1 = Maximum()  # holds one maximum
+
 ### mean shift for reflectation space
-maximum = svector()
 def rmeanshift():
     # calculate density for each point of the grid
-    global maximum
-    g.ntrans = len(g.transfs)
-    amw = g.mrad*math.pi		# angle mean width (search radius)
-    omw = g.mrad*g.moff			# offset mean width (search radius)
+    global m1
+     # length of space diagonal; also the maximal distance to any grid point
+    diag = math.sqrt((math.pi**2)+((g.moff-g.mioff)**2))
+    msr = g.mrad*diag # mean shift search radius
     for v in g.rgrid:
+        v.dens = 0
+        mt
+        closest = 0
         for t in g.transfs:
-            # angle between the normals ignoring its sign
+            # angle to the normals ignoring there sign
             diffa = min(v.angle(t.rnor), math.pi - v.angle(t.rnor))
             # difference in reflectation offset
             diffo = abs(v.roff - t.roff)
+            diff = math.sqrt((diffa**2)+(diffo**2))
             # linear weight looks like __/\__ 
-            # where amw/omw is the maximal distance
-            v.dens += max( 0 , (amw - diffa)/amw + (omw - diffo)/omw)
+            weight = (msr - diff)/msr
+            v.dens += max(0,weight)
+            # v.dens += max(0, 1 - (diffa/amw) - (diffo/omw))
             # v.dens += max( 0 , (amw - diffa)/amw)   # ignoring offset
-        v.dens = v.dens/g.ntrans  # normalization
-        if v.dens > maximum.dens:
-            maximum=v
+            if mt.dist is None:
+                mt.dist = diff
+            if diff < mt.dist:
+                mt.t = t
+                mt.dist = diff
+                mt.weight = weight 
+        v.dens = v.dens/g.ntransfs  # normalization
+        if v.dens > m1.grid.dens:
+            m1.t = mt.t
+            m1.dist = mt.dist
+            m1.weight = mt.weight
+            m1.grid = v
 
 ### show offset layer with maximum
 def showmrlayer():
-    n = round((maximum.roff/g.moff)*g.mres)
+    n = round((m1.grid.roff/g.moff)*g.mres)
     showrlayer(n)
-    print('highest density at an offset of ',maximum.roff)
+    print('highest density at an offset of ',m1.grid.roff)
     print('this is level ',n,' of ',g.mres)
     print('the maximal offset is ',g.moff)
     print('the minimal offset is ',g.mioff)
+    print('the number of transformations is ',g.ntransfs)
+    print('the highes density is ',m1.grid.dens)
+    print('the best transformation is between the points ',
+            m1.t.p.co,' and ',m1.t.q.co)
 
 ### show density by hight on the hemisphere 
 ### in 3-d view for the refectations on offset layer n
