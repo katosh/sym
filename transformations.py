@@ -18,15 +18,19 @@ class transf:
 def mktransfs():
     for i,p in enumerate(g.sigs):
         k=i+1
-        while ((k < g.laenge) and  # pairing with the followers in the array sortet by curvatures
-                (abs( 1 - (g.sigs[k].curv / p.curv) )) < g.plimit and # only pair similar curvatures
-                (p.co-g.sigs[k].co).length != 0) :                       # ... and iv the verts have differen positions 
+        # pairing with the followers in the array sortet by curvatures
+        while ((k < g.laenge) and
+                # only pair points of similar curvatures
+                (abs( 1 - (g.sigs[k].curv / p.curv) )) < g.plimit and 
+                # ... and if the verts have differen positions 
+                (p.co-g.sigs[k].co).length != 0) :
             this = transf()
             this.p=p
             this.q=g.sigs[k]
             
-            (this.tx,this.ty,this.tz)           = p.co - this.q.co  # translation
-            (this.ry,this.ry,this.rz,this.rr)   = p.normal.rotation_difference(this.q.normal) # rotation
+            (this.tx,this.ty,this.tz) = p.co - this.q.co  # translation
+            (this.ry,this.ry,this.rz,this.rr) = \
+                    p.normal.rotation_difference(this.q.normal) # rotation
             
             # normal calculation
             this.rnor=p.co-this.q.co 
@@ -56,7 +60,7 @@ def plotr():
         else:
             p.y = math.atan(t.rnor.y/t.rnor.x)  # phi
         p.x = -math.acos(t.rnor.z)              # theta
-        p.z = t.roff                            #offset
+        p.z = t.roff                            # offset
         plot.append(p)
     pmesh = bpy.data.meshes.new("Plot")
     pmesh.from_pydata(plot,[],[])

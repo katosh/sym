@@ -89,11 +89,14 @@ def rmeanshift():
     omw = g.mrad*g.moff			# offset mean width (search radius)
     for v in g.rgrid:
         for t in g.transfs:
-            diffa = math.pi - abs(math.pi - v.angle(t.rnor)) # angle between the normals ignoring its sign
-            diffo = abs(v.roff - t.roff)	# difference in reflectation offset
-            # linear weight looks like __/\__ where amw/omw is the maximal distance
-            # v.dens += max( 0 , (amw - diffa)/amw + (omw - diffo)/omw)
-            v.dens += max( 0 , (amw - diffa)/amw)   # ignoring offset
+            # angle between the normals ignoring its sign
+            diffa = math.pi - abs(math.pi - v.angle(t.rnor)) 
+            # difference in reflectation offset
+            diffo = abs(v.roff - t.roff)
+            # linear weight looks like __/\__ 
+            # where amw/omw is the maximal distance
+            v.dens += max( 0 , (amw - diffa)/amw + (omw - diffo)/omw)
+            # v.dens += max( 0 , (amw - diffa)/amw)   # ignoring offset
         v.dens = v.dens/g.ntrans  # normalization
         if v.dens > maximum.dens:
             maximum=v
@@ -105,8 +108,10 @@ def showmrlayer():
     print('highest density at an offset of ',maximum.roff)
     print('this is level ',n,' of ',g.mres)
     print('the maximal offset is ',g.moff)
+    print('the minimal offset is ',g.mioff)
 
-### show density by hight on the hemisphere in 3-d view for the refectations on offset layer n
+### show density by hight on the hemisphere 
+### in 3-d view for the refectations on offset layer n
 def showrlayer(n):
     # n between 0 and mres
     # transfere data to g.rsgrid
