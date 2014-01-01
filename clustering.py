@@ -92,8 +92,8 @@ def rmeanshift():
             diffa = math.pi - abs(math.pi - v.angle(t.rnor)) # angle between the normals ignoring its sign
             diffo = abs(v.roff - t.roff)	# difference in reflectation offset
             # linear weight looks like __/\__ where amw/omw is the maximal distance
-            v.dens += max( 0 , (amw - diffa)/amw + (omw - diffo)/omw)
-            # v.dens += max( 0 , (amw - diffa)/amw)   # ignoring offset
+            # v.dens += max( 0 , (amw - diffa)/amw + (omw - diffo)/omw)
+            v.dens += max( 0 , (amw - diffa)/amw)   # ignoring offset
         v.dens = v.dens/g.ntrans  # normalization
         if v.dens > maximum.dens:
             maximum=v

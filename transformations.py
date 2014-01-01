@@ -16,10 +16,11 @@ class transf:
     q=0                     # Vertex 2
 
 def mktransfs():
-    first = True
     for i,p in enumerate(g.sigs):
         k=i+1
-        while (k < g.laenge) and (abs( 1 - (g.sigs[k].curv / p.curv) )) < g.plimit and (p.co-g.sigs[k].co).length != 0 : # only pair similar curvatures
+        while ((k < g.laenge) and  # pairing with the followers in the array sortet by curvatures
+                (abs( 1 - (g.sigs[k].curv / p.curv) )) < g.plimit and # only pair similar curvatures
+                (p.co-g.sigs[k].co).length != 0) :                       # ... and iv the verts have differen positions 
             this = transf()
             this.p=p
             this.q=g.sigs[k]
@@ -38,7 +39,7 @@ def mktransfs():
                 alpha           = abs(hypertenuse.angle(this.rnor) - (math.pi/2))
                 this.roff       = math.sin(alpha) * hypertenuse.length
                 g.moff          = max( this.roff , g.moff )
-                if first:
+                if g.mioff is None:
                     g.mioff     = this.roff
                 g.mioff         = min( this.roff , g.mioff )
             
