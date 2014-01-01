@@ -139,6 +139,7 @@ def showmrlayer():
     print('this is level ',n,' of ',g.mres)
     print('the maximal offset is ',g.moff)
     print('the minimal offset is ',g.mioff)
+    print('the reflection normal is ',m1.t.rnor)
     print('the number of transformations is ',g.ntransfs)
     print('the highes density is ',m1.grid.dens)
     print('the best transformation is between the points ',
