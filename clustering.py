@@ -27,13 +27,15 @@ class svector(Vector):
     roff=0	# add reflectation plane offset
 
 def mkrgrid():  # make grid for reflection space
-    # even point grid on the sphere for clustering of reflection normal direction
+    # even point grid on the sphere for clustering 
+    # of reflection normal direction
     # https://perswww.kuleuven.be/~u0017946/publications/Papers97/art97a-Saff-Kuijlaars-MI/Saff-Kuijlaars-MathIntel97.pdf
 
     ### make hemisphere out of evenly spaced points
     Nu = 2*g.mres # resolution / number of directions to analyse weight
     N=Nu*2
-    for k in range(Nu,N):   # just halfe shpere since parallel normals are equivalent
+    # generate just a halfe shpere since parallel normals are equivalent
+    for k in range(Nu,N): 
         h = -1 + (2*(k-1)/(N-1))
         theta=math.acos(h)
         if k==Nu or k==N:
@@ -41,7 +43,9 @@ def mkrgrid():  # make grid for reflection space
         else:
             phi=(phi + (3.6/math.sqrt(N*(1-h**2)))) % (2*math.pi) 
         v=svector()
-        v.xyz = (math.cos(theta), math.cos(phi)*math.sin(theta), math.sin(phi)*math.sin(theta))
+        v.xyz = (math.cos(theta), 
+                math.cos(phi)*math.sin(theta), 
+                math.sin(phi)*math.sin(theta))
         g.rsgrid.append(v)
     # add normals perfectly parallel to axis because such cases ofte ocurr
     for i in range(1,4):
@@ -50,13 +54,15 @@ def mkrgrid():  # make grid for reflection space
         g.rsgrid.append(v)
 
 
-    ### show hemisphere in 3-d view and get faces of sphere-surface for later visualisation
+    ### show hemisphere in 3-d view and 
+    ### get faces of sphere-surface for later visualisation
     # detour over mesh to create bmesh from a list of vertecis
     global sphere
     global me
-    me.from_pydata(g.rsgrid,[],[])              # Fill the mesh with verts, edges, faces 
+    me.from_pydata(g.rsgrid,[],[]) # Fill the mesh with verts, edges, faces 
     sphere.from_mesh(me)
-    bmesh.ops.convex_hull(sphere,input=sphere.verts,use_existing_faces=False) # generate faces
+    # generate faces
+    bmesh.ops.convex_hull(sphere,input=sphere.verts,use_existing_faces=False) 
 
     # get faces for later visualization
     for f in sphere.faces:
@@ -90,7 +96,7 @@ def rmeanshift():
     for v in g.rgrid:
         for t in g.transfs:
             # angle between the normals ignoring its sign
-            diffa = math.pi - abs(math.pi - v.angle(t.rnor)) 
+            diffa = min(v.angle(t.rnor), math.pi - v.angle(t.rnor))
             # difference in reflectation offset
             diffo = abs(v.roff - t.roff)
             # linear weight looks like __/\__ 

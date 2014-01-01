@@ -33,22 +33,22 @@ def mktransfs():
                     p.normal.rotation_difference(this.q.normal) # rotation
             
             # normal calculation
-            this.rnor=p.co-this.q.co 
+            this.rnor = this.p.co-this.q.co 
             this.rnor.normalize()
             # offset calculation in the normal direction
-            hypertenuse     = (p.co + this.q.co) / 2
+            hypertenuse = (p.co + this.q.co) / 2
             if hypertenuse.length == 0:
                 this.off = 0
             else:
-                alpha           = abs(hypertenuse.angle(this.rnor) - (math.pi/2))
-                this.roff       = math.sin(alpha) * hypertenuse.length
+                alpha           = min(hypertenuse.angle(this.rnor), 
+                                         math.pi - hypertenuse.angle(this.rnor))
+                this.roff       = math.cos(alpha) * hypertenuse.length
                 g.moff          = max( this.roff , g.moff )
                 if g.mioff is None:
                     g.mioff     = this.roff
                 g.mioff         = min( this.roff , g.mioff )
-            
             g.transfs.append(this)
-            k=k+1
+            k+=1
 
 ## plotting transformation space for reflectation
 def plotr():

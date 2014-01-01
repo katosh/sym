@@ -2,7 +2,7 @@ import bpy
 import bmesh
 bmesh.types.BMesh.free
 
-""" GLOBAL VARIABLES """
+""" GLOBAL STUFF """
 
 ### for geometry
 bm=bmesh.new()  # THE GEOMETRY
