@@ -18,6 +18,7 @@ si.mksigs()
 import transformations as tr
 tr.mktransfs()  # make/fill transformation space
 tr.plotr()      # plotting the transformation space for refletions
+print(g.ntransfs)
 
 import clustering as cl
 cl.mkrgrid()        # make grid for reflectation space

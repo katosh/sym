@@ -86,8 +86,8 @@ def showhemisphere():
     me.update() 
 
 
-from transformations import transf
 class Maximum:
+    from transformations import transf
     grid = svector() # gridpoint
     t = transf() # closest existing transformation
     dist = None # distence of transformation to gridpoint
@@ -142,7 +142,8 @@ def showmrlayer():
     print('the number of transformations is ',g.ntransfs)
     print('the highes density is ',m1.grid.dens)
     print('the best transformation is between the points ',
-            m1.t.p.co,' and ',m1.t.q.co)
+            m1.t.p.co,' and ',m1.t.q.co,
+            ' with the indices ',m1.t.p.index,' and ',m1.t.q.index)
 
 ### show density by hight on the hemisphere 
 ### in 3-d view for the refectations on offset layer n

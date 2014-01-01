@@ -19,7 +19,7 @@ pc = 1.5	    # Pruning limit for curvature
 plimit = 0.0005	# limit of relative curvature difference for pairing
 sigs = []       # representation of signature space Omega
 pruned = []     # Point sorted out by pruning
-laenge = 0      # length of signature list
+nsigs = 0       # length of signature list
 
 ### for transformation space
 transfs = []    # transformation space

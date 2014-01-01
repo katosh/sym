@@ -1,17 +1,13 @@
 import globals as g
 
 ### ANALYSIS -> SIGNATURES ###
-class signature:
-    id = 0
-    co = 0
-    normal = 0
+class signature():
     curv = 0
+    vert = None
 def mksigs():
     for vert in g.bm.verts:
         sig = signature()
-        sig.id=vert.index
-        sig.co=vert.co
-        sig.normal=vert.normal # unfortunately not working (at least in 2d) :(
+        sig.vert = vert
         sig.curv = vert.calc_shell_factor() # "sharpness of the vertex"
         
         if sig.curv > g.pc:      # Pruning
@@ -20,4 +16,4 @@ def mksigs():
             g.pruned.append(sig)
         
     g.sigs.sort(key=lambda x: x.curv, reverse=False) # sort by curvature
-    g.laenge = len(g.sigs) # length of the array
+    g.nsigs = len(g.sigs) # length of the array

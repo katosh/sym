@@ -12,31 +12,33 @@ class transf:
     (tx,ty,tz) = (0,0,0)    # translation vector
     rnor=Vector()           # reflection normal
     roff=Vector()           # reflection offset in normal direction
-    p=0                     # Vertex 1
-    q=0                     # Vertex 2
+    p = None                # Vertex 1
+    pc = 0                  # Curvature of Vertex 1
+    q = None                # Vertex 2
+    qc = 0                  # Curvature of Vertex 2
 
 def mktransfs():
     for i,p in enumerate(g.sigs):
         k=i+1
         # pairing with the followers in the array sortet by curvatures
-        while ((k < g.laenge) and
+        while ((k < g.nsigs) and
                 # only pair points of similar curvatures
                 (abs( 1 - (g.sigs[k].curv / p.curv) )) < g.plimit and 
                 # ... and if the verts have differen positions 
-                (p.co-g.sigs[k].co).length != 0) :
+                (p.vert.co-g.sigs[k].vert.co).length != 0) :
             this = transf()
-            this.p=p
-            this.q=g.sigs[k]
+            this.p=p.vert
+            this.q=g.sigs[k].vert
             
-            (this.tx,this.ty,this.tz) = p.co - this.q.co  # translation
+            (this.tx,this.ty,this.tz) = this.p.co - this.q.co  # translation
             (this.ry,this.ry,this.rz,this.rr) = \
-                    p.normal.rotation_difference(this.q.normal) # rotation
+                    this.p.normal.rotation_difference(this.q.normal) # rotation
             
             # normal calculation
             this.rnor = this.p.co-this.q.co 
             this.rnor.normalize()
             # offset calculation in the normal direction
-            hypertenuse = (p.co + this.q.co) / 2
+            hypertenuse = (this.p.co + this.q.co) / 2
             if hypertenuse.length == 0:
                 this.off = 0
             else:
