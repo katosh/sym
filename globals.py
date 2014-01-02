@@ -17,6 +17,7 @@ bm.from_mesh(bpy.data.meshes["Suzanne"]) # get mesh data from model
 ### for sigature space
 pc = 1.5	    # Pruning limit for curvature
 plimit = 0.0005	# limit of relative curvature difference for pairing
+#plimit = 0.1	# limit of relative curvature difference for pairing
 sigs = []       # representation of signature space Omega
 pruned = []     # Point sorted out by pruning
 nsigs = 0       # length of signature list
@@ -35,3 +36,4 @@ mres = 50	    # resolution for Mean Shift
 rgrid = []      # grid for reflection space
 rsgrid = []     # grid for reflection space in just one offsetlayer
 sfaces = []     # faces of hemisphere for visualization
+bref = None     # best reflection

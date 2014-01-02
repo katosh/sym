@@ -130,6 +130,7 @@ def rmeanshift():
             m1.dist = mt.dist
             m1.weight = mt.weight
             m1.grid = v
+    g.bref = m1.t # safe best reflection transformation
 
 ### show offset layer with maximum
 def showmrlayer():

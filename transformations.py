@@ -7,10 +7,20 @@ import bpy
 
 class transf:
     scal = 1                # scaling
+    test = Vector()
     (rx,ry,rz) = (0,0,0)    # rotation arround this vector
     rr = 0                  # rotation angle
     (tx,ty,tz) = (0,0,0)    # translation vector
-    rnor=Vector()           # reflection normal
+    rnor = Vector()         # reflection normal
+# sphere coordinates for reflection normal:
+    def rnor_phi(self):
+        if self.rnor.x == 0:
+            return math.pi/2
+        else:
+            return math.atan(self.rnor.y/self.rnor.x)  # phi
+    def rnor_theta(self):
+        return math.acos(self.rnor.z)              # theta
+
     roff=Vector()           # reflection offset in normal direction
     p = None                # Vertex 1
     pc = 0                  # Curvature of Vertex 1
@@ -58,11 +68,8 @@ def plotr():
     plot = []
     for t in g.transfs:
         p = Vector()
-        if t.rnor.x == 0:
-            p.y = math.pi/2
-        else:
-            p.y = math.atan(t.rnor.y/t.rnor.x)  # phi
-        p.x = -math.acos(t.rnor.z)              # theta
+        p.x = t.rnor_phi()
+        p.y = t.rnor_theta()
         p.z = t.roff                            # offset
         plot.append(p)
     pmesh = bpy.data.meshes.new("Plot")
