@@ -8,9 +8,31 @@ import bpy
 
 class transf(object):
     """ a transformation between two points of the geometry """
-    def __init__(self, point1=None, point2=None):
-        self.p = point1
-        self.q = point2
+    def __init__(self,
+            point1=None,
+            point2=None,
+            signature1=None,
+            signature2=None):
+        if signature1:
+            # principal curvatures TODO in signatures
+            self.pc1 = signature1.pc1
+            self.pc2 = signature1.pc2
+            # total curvature
+            self.pc = signature1.curv
+            # point
+            self.p = signature1.vert
+        else:
+            self.p = point1
+            self.q = point2
+        if signature2:
+            self.qc1 = signature2.pc1
+            self.qc2 = signature2.pc2
+            # total curvature
+            self.qc = signature2.curv
+            # point
+            self.q = signature2.vert
+        else:
+            self.q = point2
         self.scal = 1
         self.trans = self.p.co - self.q.co
         # safe diam globaly
@@ -33,11 +55,6 @@ class transf(object):
             if g.mioff is None:
                 g.mioff = self.roff
             g.mioff = min(self.roff, g.mioff)
-        # principal curvatures TODO
-        self.pc1 = None
-        self.pc2 = None
-        self.qc1 = None
-        self.qc2 = None
     # sphere coordinates for reflection normal:
     def rnor_phi(self):
         """ returnes phi of the spherical coordinates
@@ -53,15 +70,15 @@ class transf(object):
 
 def mktransfs():
     """ fills the transformation space with all the transformation (pairing)"""
-    for i, p in enumerate(g.sigs):
+    for i in range(0,len(g.sigs)):
         k = i+1
         # pairing with the followers in the array sortet by curvatures
         while ((k < g.nsigs) and
                 # only pair points of similar curvatures
-                (abs(1 - (g.sigs[k].curv / p.curv))) < g.plimit and
+                (abs(1 - (g.sigs[k].curv / g.sigs[i].curv))) < g.plimit and
                 # ... and if the verts have differen positions
-                (p.vert.co-g.sigs[k].vert.co).length != 0):
-            this = transf(point1=p.vert, point2=g.sigs[k].vert)
+                (g.sigs[i].vert.co-g.sigs[k].vert.co).length != 0):
+            this = transf(signature1=g.sigs[i], signature2=g.sigs[k])
             g.transfs.append(this)
             k += 1
     g.ntransfs = len(g.transfs)
