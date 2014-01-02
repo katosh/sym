@@ -53,13 +53,13 @@ def mktransfs():
             if hypertenuse.length == 0:
                 this.off = 0
             else:
-                alpha           = min(hypertenuse.angle(this.rnor), 
-                                         math.pi - hypertenuse.angle(this.rnor))
-                this.roff       = math.cos(alpha) * hypertenuse.length
-                g.moff          = max( this.roff , g.moff )
+                alpha = min(hypertenuse.angle(this.rnor), 
+                        math.pi - hypertenuse.angle(this.rnor))
+                this.roff = math.cos(alpha) * hypertenuse.length
+                g.moff = max( this.roff , g.moff )
                 if g.mioff is None:
-                    g.mioff     = this.roff
-                g.mioff         = min( this.roff , g.mioff )
+                    g.mioff = this.roff
+                g.mioff = min( this.roff , g.mioff )
             g.transfs.append(this)
             k+=1
     g.ntransfs = len(g.transfs)
