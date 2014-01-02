@@ -87,11 +87,16 @@ def showhemisphere():
 
 
 class Maximum:
-    from transformations import transf
-    grid = svector() # gridpoint
-    t = transf() # closest existing transformation
-    dist = None # distence of transformation to gridpoint
-    weight = 0  # weight in density function
+    def __init__(self, 
+            transformation=None, 
+            gridpoint=None, 
+            weight=0, 
+            distance=0):
+        self.grid = gridpoint
+        self.t = transformation
+        # distance/difference between gridpoint and actual tarnsformation
+        self.dist = distance 
+        self.weight = weight  # weight in density function
 
 mt = Maximum()  # saves best transformation for a grid point
 m1 = Maximum()  # holds one maximum

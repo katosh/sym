@@ -9,11 +9,12 @@ def mksigs():
         sig = signature()
         sig.vert = vert
         sig.curv = vert.calc_shell_factor() # "sharpness of the vertex"
-        
+        # TODO: better curvature calculation
+        # TODO: calcualte two principal curvatures
         if sig.curv > g.pc:      # Pruning
             g.sigs.append(sig)
         else:
             g.pruned.append(sig)
         
     g.sigs.sort(key=lambda x: x.curv, reverse=False) # sort by curvature
-    g.nsigs = len(g.sigs) # length of the array
+    g.nsigs = len(g.sigs) # length of the list

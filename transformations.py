@@ -6,12 +6,37 @@ import bpy
 ### PAIRING -> TRANSFORMATIONS ###
 
 class transf:
-    scal = 1                # scaling
-    test = Vector()
-    (rx,ry,rz) = (0,0,0)    # rotation arround this vector
-    rr = 0                  # rotation angle
-    (tx,ty,tz) = (0,0,0)    # translation vector
-    rnor = Vector()         # reflection normal
+    """ a transformation between two points of the geometry """
+    def __init__(self, point1=None, point2=None):
+        self.p = point1
+        self.q = point2
+        self.scal = 1
+        self.trans = self.p.co - self.q.co
+        # safe diam globaly
+        g.diam = max(g.diam, self.trans.length)
+        # calculate rotation vector and angle
+        (self.rx,self.ry,self.rz, self.rr) = \
+                self.p.normal.rotation_difference(self.q.normal)
+        # normal calculation
+        self.rnor = self.trans
+        self.rnor.normalize()
+        # offset calculation in the normal direction
+        hypertenuse = (self.p.co + self.q.co) / 2
+        if hypertenuse.length == 0:
+            self.off = 0
+        else:
+            alpha = min(hypertenuse.angle(self.rnor), 
+                    math.pi - hypertenuse.angle(self.rnor))
+            self.roff = math.cos(alpha) * hypertenuse.length
+            g.moff = max( self.roff , g.moff )
+            if g.mioff is None:
+                g.mioff = self.roff
+            g.mioff = min( self.roff , g.mioff )
+        # principal curvatures TODO
+        self.pc1 = None
+        self.pc2 = None
+        self.qc1 = None
+        self.qc2 = None
 # sphere coordinates for reflection normal:
     def rnor_phi(self):
         if self.rnor.x == 0:
@@ -20,12 +45,6 @@ class transf:
             return math.atan(self.rnor.y/self.rnor.x)  # phi
     def rnor_theta(self):
         return math.acos(self.rnor.z)              # theta
-
-    roff=Vector()           # reflection offset in normal direction
-    p = None                # Vertex 1
-    pc = 0                  # Curvature of Vertex 1
-    q = None                # Vertex 2
-    qc = 0                  # Curvature of Vertex 2
 
 def mktransfs():
     for i,p in enumerate(g.sigs):
@@ -36,30 +55,7 @@ def mktransfs():
                 (abs( 1 - (g.sigs[k].curv / p.curv) )) < g.plimit and 
                 # ... and if the verts have differen positions 
                 (p.vert.co-g.sigs[k].vert.co).length != 0) :
-            this = transf()
-            this.p=p.vert
-            this.q=g.sigs[k].vert
-            
-            (this.tx,this.ty,this.tz) = this.p.co - this.q.co  # translation
-            (this.ry,this.ry,this.rz,this.rr) = \
-                    this.p.normal.rotation_difference(this.q.normal) # rotation
-            
-            # normal calculation
-            this.rnor = this.p.co-this.q.co 
-            g.diam = max(g.diam, this.rnor.length)
-            this.rnor.normalize()
-            # offset calculation in the normal direction
-            hypertenuse = (this.p.co + this.q.co) / 2
-            if hypertenuse.length == 0:
-                this.off = 0
-            else:
-                alpha = min(hypertenuse.angle(this.rnor), 
-                        math.pi - hypertenuse.angle(this.rnor))
-                this.roff = math.cos(alpha) * hypertenuse.length
-                g.moff = max( this.roff , g.moff )
-                if g.mioff is None:
-                    g.mioff = this.roff
-                g.mioff = min( this.roff , g.mioff )
+            this = transf(point1=p.vert, point2=g.sigs[k].vert)
             g.transfs.append(this)
             k+=1
     g.ntransfs = len(g.transfs)
