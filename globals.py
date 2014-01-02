@@ -29,6 +29,8 @@ moff    = 0     # maximal reflection plane offset
 mioff   = None  # minimal reflection plane offset
 sfaces  = []    # hemisphere faces for visualization
 ntransfs= 0     # number of transformations
+diam    = 0     # object maximal diameter within unpruned points
+# the diam is used for fisualisation of reflection planes in the verification step
 
 ### for clustering
 mrad = 0.16	    # relative radius for mean shift (1 is the whole space)

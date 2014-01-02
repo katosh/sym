@@ -18,6 +18,7 @@ def showplane():
     n.xyz = (g.bref.rnor_phi(),
         g.bref.rnor_theta(),
         0)
-    bpy.ops.mesh.primitive_plane_add(radius=1.5, 
+    bpy.ops.mesh.primitive_plane_add(
+            radius=0.6 * g.diam, 
             location = base, 
             rotation=n.zyx)

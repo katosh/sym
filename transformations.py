@@ -46,6 +46,7 @@ def mktransfs():
             
             # normal calculation
             this.rnor = this.p.co-this.q.co 
+            g.diam = max(g.diam, this.rnor.length)
             this.rnor.normalize()
             # offset calculation in the normal direction
             hypertenuse = (this.p.co + this.q.co) / 2
