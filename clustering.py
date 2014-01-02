@@ -92,27 +92,35 @@ class Maximum:
             transformation=None, 
             gridpoint=None, 
             weight=0, 
-            distance=0):
+            distance=None):
         self.grid = gridpoint
         self.t = transformation
         # distance/difference between gridpoint and actual tarnsformation
         self.dist = distance 
         self.weight = weight  # weight in density function
 
-mt = Maximum()  # saves best transformation for a grid point
-m1 = Maximum()  # holds one maximum
-
 ### mean shift for reflectation space
 def rmeanshift():
-    # calculate density for each point of the grid
-    global m1
-     # length of space diagonal; also the maximal distance to any grid point
+    """ calculate the density of transformations at each grid point """
+    g.maxima = Maximum()  # holds one maximum
+    # length of space diagonal
+    # ... is also the maximal distance btween any grid point 
+    # ... and a transformation
     diag = math.sqrt((math.pi**2)+((g.moff-g.mioff)**2))
     msr = g.mrad*diag # mean shift search radius
+    # to show proces
+    steps = len(g.rgrid) # number of steps
+    step = 0 # current step
+    waitsteps = math.ceil(steps/100) # steps befor showing percentage
+    slssteps = 0 # steps since last showing of percentage
     for v in g.rgrid:
+        slssteps += 1
+        if slssteps > waitsteps:
+            step += slssteps
+            print('process at ',math.floor(100*step/steps),' %')
+            slssteps = 0
         v.dens = 0
-        mt
-        closest = 0
+        mt = Maximum()
         for t in g.transfs:
             # angle to the normals ignoring there sign
             diffa = min(v.angle(t.rnor), math.pi - v.angle(t.rnor))
@@ -124,34 +132,35 @@ def rmeanshift():
             v.dens += max(0,weight)
             # v.dens += max(0, 1 - (diffa/amw) - (diffo/omw))
             # v.dens += max( 0 , (amw - diffa)/amw)   # ignoring offset
-            if mt.dist is None:
-                mt.dist = diff
-            if diff < mt.dist:
+            if mt.dist is None or diff < mt.dist:
                 mt.t = t
                 mt.dist = diff
                 mt.weight = weight 
         v.dens = v.dens/g.ntransfs  # normalization
-        if v.dens > m1.grid.dens:
-            m1.t = mt.t
-            m1.dist = mt.dist
-            m1.weight = mt.weight
-            m1.grid = v
-    g.bref = m1.t # safe best reflection transformation
+        if g.maxima.grid is None or v.dens > g.maxima.grid.dens:
+            g.maxima.t = mt.t
+            g.maxima.dist = mt.dist
+            g.maxima.weight = mt.weight
+            g.maxima.grid = v
+    g.bref = g.maxima.t # safe best reflection transformation
 
-### show offset layer with maximum
+### show offsetlayer with maximum
 def showmrlayer():
-    n = round((m1.grid.roff/g.moff)*g.mres)
+    n = round((g.maxima.grid.roff/g.moff)*g.mres)
     showrlayer(n)
-    print('highest density at an offset of ',m1.grid.roff)
+
+def showdata():
+    n = round((g.maxima.grid.roff/g.moff)*g.mres)
+    print('highest density at an offset of ',g.maxima.grid.roff)
     print('this is level ',n,' of ',g.mres)
     print('the maximal offset is ',g.moff)
     print('the minimal offset is ',g.mioff)
-    print('the reflection normal is ',m1.t.rnor)
+    print('the reflection normal is ',g.maxima.t.rnor)
     print('the number of transformations is ',g.ntransfs)
-    print('the highes density is ',m1.grid.dens)
+    print('the highes density is ',g.maxima.grid.dens)
     print('the best transformation is between the points ',
-            m1.t.p.co,' and ',m1.t.q.co,
-            ' with the indices ',m1.t.p.index,' and ',m1.t.q.index)
+            g.maxima.t.p.co,' and ',g.maxima.t.q.co,
+            ' with the indices ',g.maxima.t.p.index,' and ',g.maxima.t.q.index)
 
 ### show density by hight on the hemisphere 
 ### in 3-d view for the refectations on offset layer n

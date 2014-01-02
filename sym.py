@@ -11,23 +11,28 @@ def showmesh():
     ob_new = bpy.data.objects.new("Butterfly", mesh)     
     g.scene.objects.link(ob_new)
 
-#showmesh()
+showmesh()
 
+print('calculating signatures...')
 import signatures as si
 si.mksigs()
 
+print('filling the transformation space...')
 import transformations as tr
 tr.mktransfs()  # make/fill transformation space
 tr.plotr()      # plotting the transformation space for refletions
 
+print('clustering...')
 import clustering as cl
-#cl.mkrgrid()        # make grid for reflectation space
+cl.mkrgrid()        # make grid for reflectation space
 #cl.showhemisphere()   # show one generatet hemisphere (one offset layer of the grid)
-#cl.rmeanshift()     # calculate the density of transformations for each grid point
+cl.rmeanshift()     # calculate the density of transformations for each grid point
 #cl.showrlayer(0)    # show one offset layer with hight (or distance to (0,0,0)) representig density
 #cl.showmrlayer()     # show the offset layer where the density reaches its maximum
+cl.showdata() # show some written data
 
 # code.interact(local=locals())   # interactive variable test
 
+print('verifying symmetries...')
 import verification as ver
-#ver.showplane()
+ver.showplane()

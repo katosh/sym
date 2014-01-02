@@ -1,8 +1,9 @@
+""" GLOBAL STUFF """
+
 import bpy
 import bmesh
 bmesh.types.BMesh.free
 
-""" GLOBAL STUFF """
 
 ### for geometry
 bm=bmesh.new()  # THE GEOMETRY
@@ -38,4 +39,5 @@ mres = 50	    # resolution for Mean Shift
 rgrid = []      # grid for reflection space
 rsgrid = []     # grid for reflection space in just one offsetlayer
 sfaces = []     # faces of hemisphere for visualization
+maxima = None   # Maxima in mean shift surface
 bref = None     # best reflection
