@@ -87,6 +87,7 @@ def showhemisphere():
 
 
 class Maximum:
+    """ holds a transformation together with a gridpoint """
     def __init__(self, 
             transformation=None, 
             gridpoint=None, 
