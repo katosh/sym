@@ -3,16 +3,14 @@ import code
 import sys
 sys.path.append(r'.')   # add script path to system pathes to find the other modules
 import globals as g
+import bmesh
 
-### Show the used mesh in 3-d view
-def showmesh():
-    mesh = bpy.data.meshes.new("Buttefly")
-    g.bm.to_mesh(mesh)
-    ob_new = bpy.data.objects.new("Butterfly", mesh)     
-    g.scene.objects.link(ob_new)
-
-def run():	
-	showmesh()
+def run(obj=None):
+	g.bm=bmesh.new()
+	if type(obj)==bpy.types.Object:
+		g.bm.from_mesh(obj.data)
+	else:
+		g.bm.from_mesh(bpy.context.object.data)
 
 	print('calculating signatures...')
 	import signatures as si
@@ -38,5 +36,19 @@ def run():
 	import verification as ver
 	ver.showplane()
 
+def createsuzanne():
+	import bmesh
+	bm=bmesh.new()
+	bpy.ops.object.delete()            # deleting the stupid cube
+	bpy.ops.mesh.primitive_monkey_add()
+	bpy.ops.object.delete()
+	bm.from_mesh(bpy.data.meshes["Suzanne"]) # get mesh data from model
+	mesh = bpy.data.meshes.new("Apemesh")
+	bm.to_mesh(mesh)
+	ob_new = bpy.data.objects.new("Apeobj", mesh)
+	g.scene.objects.link(ob_new)
+	return ob_new
+
+
 if __name__ == "__main__":
-	run()
+	run(createsuzanne())

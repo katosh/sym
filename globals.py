@@ -1,16 +1,8 @@
 """ GLOBAL STUFF """
 
 import bpy
-import bmesh
-bmesh.types.BMesh.free
 
-
-### for geometry
-bm=bmesh.new()  # THE GEOMETRY
 scene = bpy.context.scene   # for visualisation
-
-# geting an example geometry
-bm.from_mesh(bpy.context.object.data)
 
 ### for sigature space
 pc = 1.5	    # Pruning limit for curvature
