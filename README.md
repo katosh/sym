@@ -42,3 +42,9 @@ auch interessant
 ----------------
 
 [BioBlender] (http://www.bioblender.eu/)
+
+
+Easter Egg
+----------
+
+import this
