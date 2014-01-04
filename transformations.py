@@ -44,13 +44,13 @@ class transf(object):
         self.rnor = self.trans
         self.rnor.normalize()
         # offset calculation in the normal direction
-        hypertenuse = (self.p.co + self.q.co) / 2
-        if hypertenuse.length == 0:
+        hypotenuse = (self.p.co + self.q.co) / 2
+        if hypotenuse.length == 0:
             self.off = 0
         else:
-            alpha = min(hypertenuse.angle(self.rnor),
-                    math.pi - hypertenuse.angle(self.rnor))
-            self.roff = math.cos(alpha) * hypertenuse.length
+            alpha = min(hypotenuse.angle(self.rnor),
+                    math.pi - hypotenuse.angle(self.rnor))
+            self.roff = math.cos(alpha) * hypotenuse.length
             g.moff = max(self.roff, g.moff)
             if g.mioff is None:
                 g.mioff = self.roff
