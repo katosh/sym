@@ -10,10 +10,7 @@ bm=bmesh.new()  # THE GEOMETRY
 scene = bpy.context.scene   # for visualisation
 
 # geting an example geometry
-bpy.ops.object.delete()	    # deleting the stupid cube
-bpy.ops.mesh.primitive_monkey_add()
-bpy.ops.object.delete()
-bm.from_mesh(bpy.data.meshes["Suzanne"]) # get mesh data from model
+bm.from_mesh(bpy.context.object.data)
 
 ### for sigature space
 pc = 1.5	    # Pruning limit for curvature

@@ -111,7 +111,7 @@ def rmeanshift():
     # to show proces
     steps = len(g.rgrid) # number of steps
     step = 0 # current step
-    waitsteps = math.ceil(steps/100) # steps befor showing percentage
+    waitsteps = math.ceil(steps/10) # steps befor showing percentage
     slssteps = 0 # steps since last showing of percentage
     for v in g.rgrid:
         slssteps += 1
