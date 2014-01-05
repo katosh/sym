@@ -4,7 +4,7 @@ import tools
 def K(delta,bandwidth):
     return (bandwidth-delta)/bandwidth #hütchenfunktion als kernel
 	
-def cluster(gamma,steps=100,bandwidth=0.5,densitythreshold=50,offset_threshold=0.01,debug=True):
+def cluster(gamma,steps=100,bandwidth=0.3,densitythreshold=12,offset_threshold=0.01,debug=True):
 	clusters=[]
 	for t in gamma: #startpunkt
 		m=t.co.copy()
