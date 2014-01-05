@@ -4,7 +4,7 @@ import tools
 def K(delta,bandwidth):
     return (bandwidth-delta)/bandwidth #hütchenfunktion als kernel
 	
-def cluster(gamma,steps=100,bandwidth=0.3,densitythreshold=12,offset_threshold=0.01,debug=True):
+def cluster(gamma,steps=100,bandwidth=0.2,densitythreshold=5,offset_threshold=0.001,debug=True):
 	clusters=[]
 	for t in gamma: #startpunkt
 		m=t.co.copy()
@@ -14,10 +14,11 @@ def cluster(gamma,steps=100,bandwidth=0.3,densitythreshold=12,offset_threshold=0
 			for u in gamma:
 				delta = u.co-m
 				if 0 < delta.length < bandwidth:
-					offset+=delta*K(delta.length,bandwidth)
+					offset+=u.co*K(delta.length,bandwidth)
 					weight+=K(delta.length,bandwidth)
+			mold=m
 			m=(m+offset)/(weight+1)
-			if offset.length<offset_threshold:
+			if (mold-m).length<offset_threshold:
 				break
 		if debug and i>steps/2:
 			print (i+1,"steps")
@@ -25,7 +26,7 @@ def cluster(gamma,steps=100,bandwidth=0.3,densitythreshold=12,offset_threshold=0
 			#print ("shifted",t.co,"to",m,"after",i+1,"steps with an offset of",offset.length,"and a density of",weight)
 			found=False
 			for cl in clusters:
-				if (cl[0]-m).length<offset_threshold*2: #gehört die *2 hier rein?!
+				if (cl[0]-m).length<offset_threshold*10: #sonst wird irgendwie nicht gut geclustert...
 					t.cluster=cl
 					found=True
 					break
