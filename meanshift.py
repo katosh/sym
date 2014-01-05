@@ -16,8 +16,7 @@ def cluster(gamma,steps=100,bandwidth=0.3,densitythreshold=12,offset_threshold=0
 				if 0 < delta.length < bandwidth:
 					offset+=delta*K(delta.length,bandwidth)
 					weight+=K(delta.length,bandwidth)
-			offset=offset/weight
-			m+=offset
+			m=(m+offset)/(weight+1)
 			if offset.length<offset_threshold:
 				break
 		if debug and i>steps/2:
