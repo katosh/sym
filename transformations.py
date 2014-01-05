@@ -46,22 +46,14 @@ class transf(object):
         # offset calculation in the normal direction
 		# = projection of the midpoint in the normal direction
         self.roff = self.rnor * (self.p.co + self.q.co) / 2
+        #compute coordinates in transformation space
+		# (phi, theta, offset)
+        self.co = Vector((math.atan(self.rnor.y/self.rnor.x) if self.rnor.x != 0 else math.pi/2,math.acos(self.rnor.z),self.roff))
+		#compute min and max offsets
         g.moff = max(self.roff, g.moff)
         if g.mioff is None:
             g.mioff = self.roff
         g.mioff = min(self.roff, g.mioff)
-    # sphere coordinates for reflection normal:
-    def rnor_phi(self):
-        """ returnes phi of the spherical coordinates
-        of the reflection normal """
-        if self.rnor.x == 0:
-            return math.pi/2
-        else:
-            return math.atan(self.rnor.y/self.rnor.x)
-    def rnor_theta(self):
-        """ returnes theta of the spherical coordinates
-        of the reflection normal """
-        return math.acos(self.rnor.z)
 
 def mktransfs():
     """ fills the transformation space with all the transformation (pairing)"""
@@ -83,9 +75,9 @@ def plotr():
     plot = []
     for t in g.transfs:
         p = Vector()
-        p.x = t.rnor_phi()
-        p.y = t.rnor_theta()
-        p.z = t.roff                            # offset
+        p.x = t.co[0] # phi
+        p.y = t.co[1] # theta
+        p.z = t.co[2] # offset
         plot.append(p)
     pmesh = bpy.data.meshes.new("Plot")
     pmesh.from_pydata(plot, [], [])

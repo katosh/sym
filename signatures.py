@@ -13,6 +13,7 @@ class Signature(object):
 
 def mksigs():
     """ fill the signature space """
+    g.sigs = []
     for vert in g.bm.verts:
         sig = Signature(vert)
         if sig.curv > g.pc:      # Pruning
