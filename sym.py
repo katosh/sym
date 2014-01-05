@@ -24,7 +24,7 @@ def run(obj=None):
 
 	import meanshift
 	g.clusters=meanshift.cluster(g.transfs)
-	print('found'len(g.clusters),'clusters')
+	meanshift.plot_clusters(g.clusters)
 
 #	print('clustering...')
 #	import clustering as cl
