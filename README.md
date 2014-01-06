@@ -5,6 +5,8 @@ Alternatively add the sym directory to the PYTHONPATH environment variable and '
 usefull links
 -------------
 
+[estimate principal curvature on point cloud] (http://liama.ia.ac.cn/zhang/Papers/2008/2008P_AG_Curvature.pdf)
+
 [Mean Shift Clustering (Comaniciu and Meer, 2002)] (http://courses.csail.mit.edu/6.869/handouts/PAMIMeanshift.pdf)
 
 [3D Function Surface] (http://wiki.blender.org/index.php/Extensions:2.6/Py/Scripts/Add_Mesh/Add_3d_Function_Surface)
