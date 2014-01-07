@@ -6,32 +6,48 @@ import bpy
 import bmesh
 import globals as g
 
-class Transformations:
-    """ representation of the transformation space also containing the blender object """
+class Transformations: #maybe extend blender object or sth better?
+    """ collection of transformations of type Transf also containing the representing blender object """
     
-    transf_data=[] # passiert hier das gleiche wie mit self.transf_data=[] in __init__?
+    transf_data=[] # will contain the transformations of type Transf
+    # passiert hier das gleiche wie mit self.transf_data=[] in __init__?
     
-    def __init__(self):
+    def __init__(self,signatures,plimit = 0.1):
         self.mesh = bpy.data.meshes.new("Transformations")
         self.obj  = bpy.data.objects.new("Transformations", self.mesh)
         self.bm   = bmesh.new()
+        self.compute(signatures)
     
+    def __getitem__(self, arg): # allows accessing the transf_data directly via []
+        return self.transf_data[arg]
+        
+    def __len__(self):
+        return len(self.transf_data)
+        
     def add(self, t):
         self.transf_data.append(t)
         self.bm.verts.new(t.co)
     
-    #todo: use bmesh edit mode for plotting
-    def plot(self): 
+    def plot(self,scene): # maybe use bmesh edit mode for plotting
         self.bm.to_mesh(self.mesh)
-        g.scene.objects.link(self.obj)
+        scene.objects.link(self.obj)
         
+    def compute(self,sigs):
+        """ fills the transformation space with all the transformations (pairing)"""
         
-        
-    def __len__(self):
-        return len(self.transf_data)
+        for i in range(0,len(sigs)):
+            # pairing with the followers in the array sorted ! by curvatures
+            for j in range(i+1,len(sigs)):
+                # skip following signatures, if the curvature differ too much
+                if (abs(1 - (sigs[k].curv / sigs[i].curv))) > plimit
+                    break
+                # would like to eliminate double entries before!    
+                if (sigs[i].vert.co!=sigs[k].vert.co):                               
+                    self.add(Transf(signature1=sigs[i], signature2=sigs[k]))
+            
 
 class Transf:
-    """ a transformation between two points of the geometry """
+    """ computes the transformation between two points of the geometry """
     def __init__(self,
             point1=None,
             point2=None,
@@ -47,7 +63,6 @@ class Transf:
             self.p = signature1.vert
         else:
             self.p = point1
-            self.q = point2
         if signature2:
             self.qc1 = signature2.pc1
             self.qc2 = signature2.pc2
@@ -78,20 +93,3 @@ class Transf:
         if g.mioff is None:
             g.mioff = self.roff
         g.mioff = min(self.roff, g.mioff)
-        
-        
-def mktransfs():
-    """ fills the transformation space with all the transformation (pairing)"""
-    g.transfs = Transformations()
-    for i in range(0,len(g.sigs)):
-        k = i+1
-        # pairing with the followers in the array sorted by curvatures
-        while ((k < g.nsigs) and
-                # only pair points of similar curvatures
-                (abs(1 - (g.sigs[k].curv / g.sigs[i].curv))) < g.plimit and
-                # ... and if the verts have different positions
-                (g.sigs[i].vert.co-g.sigs[k].vert.co).length != 0):
-            this = Transf(signature1=g.sigs[i], signature2=g.sigs[k])
-            g.transfs.add(this)
-            k += 1
-    g.ntransfs = len(g.transfs)

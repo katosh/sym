@@ -18,12 +18,12 @@ def run(obj=None):
 
     print('filling the transformation space...')
     import transformations as tr
-    tr.mktransfs()   # make/fill transformation space
-    g.transfs.plot() # plotting the transformation space for refletions
+    g.transfs = tr.Transformations(g.sigs) # compute transformation space
+    g.transfs.plot(g.scene) # plotting the transformation space for refletions
     print('found',len(g.transfs),'transformations')
 
     import meanshift
-    g.clusters=meanshift.cluster(g.transfs.transf_data)
+    g.clusters=meanshift.cluster(g.transfs)
     meanshift.plot_clusters(g.clusters)
 
 #   print('clustering...')
