@@ -1,46 +1,36 @@
-import bpy
-import code
 import sys
 sys.path.append(r'.')   # add script path to system pathes to find the other modules
-import globals as g
-import bmesh
+import bpy, bmesh
+
+from signatures import mksigs
+from transformations import Gamma
+from meanshift import cluster
 
 def run(obj=None):
-    g.bm=bmesh.new()
+    scene=bpy.context.scene
+    bm=bmesh.new()
+    
     if type(obj)==bpy.types.Object:
-        g.bm.from_mesh(obj.data)
+        bm.from_mesh(obj.data)
     else:
-        g.bm.from_mesh(bpy.context.object.data)
-
+        bm.from_mesh(bpy.context.object.data)
+    
+    scene=bpy.context.scene
+    
     print('calculating signatures...')
-    import signatures as si
-    si.mksigs()
+    sigs = mksigs(bm.verts)
+    print('calculated',len(sigs),'signatures')
 
     print('filling the transformation space...')
-    import transformations as tr
-    g.transfs = tr.Transformations(g.sigs) # compute transformation space
-    g.transfs.plot(g.scene) # plotting the transformation space for refletions
-    print('found',len(g.transfs),'transformations')
+    gamma = Gamma(sigs)
+    print('found',len(gamma),'transformations')
+    gamma.plot(scene,label="transformations")
+    
 
-    import meanshift
-    g.clusters=meanshift.cluster(g.transfs)
-    #g.clusters.plot(g.scene)
-    meanshift.plot_clusters(g.clusters)
-
-#   print('clustering...')
-#   import clustering as cl
-#   cl.mkrgrid()        # make grid for reflectation space
-    #cl.showhemisphere()   # show one generatet hemisphere (one offset layer of the grid)
-#   cl.rmeanshift()     # calculate the density of transformations for each grid point
-    #cl.showrlayer(0)    # show one offset layer with hight (or distance to (0,0,0)) representig density
-    #cl.showmrlayer()     # show the offset layer where the density reaches its maximum
-#   cl.showdata() # show some written data
-
-    # code.interact(local=locals())   # interactive variable test
-
-#   print('verifying symmetries...')
-#   import verification as ver
-#   ver.showplane()
+    print('clustering...')
+    clusters=cluster(gamma)
+    print('found',len(clusters),'clusters')
+    clusters.plot(scene,label="clusters")   
 
 def createsuzanne():
     import bmesh
@@ -55,6 +45,19 @@ def createsuzanne():
     g.scene.objects.link(ob_new)
     return ob_new
 
-
 if __name__ == "__main__":
     run(createsuzanne())
+    
+def test(p=False):
+    import imp, cProfile, sym, signatures, transformations, meanshift
+    
+    imp.reload(imp)
+    imp.reload(sym)
+    imp.reload(signatures)
+    imp.reload(transformations)
+    imp.reload(meanshift)
+    
+    if p:
+        cProfile.run('sym.run()')
+    else:
+        sym.run()
