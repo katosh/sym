@@ -12,11 +12,11 @@ class Transformations: #maybe extend blender object or sth better?
     transf_data=[] # will contain the transformations of type Transf
     # passiert hier das gleiche wie mit self.transf_data=[] in __init__?
     
-    def __init__(self, signatures, plimit = 0.1):
+    def __init__(self, signatures=None, plimit = 0.1):
         self.mesh = bpy.data.meshes.new("Transformations")
         self.obj  = bpy.data.objects.new("Transformations", self.mesh)
         self.bm   = bmesh.new()
-        self.compute(signatures)
+        if signatures: self.compute(signatures) 
     
     def __getitem__(self, arg): # allows accessing the transf_data directly via []
         return self.transf_data[arg]
@@ -32,7 +32,7 @@ class Transformations: #maybe extend blender object or sth better?
         self.bm.to_mesh(self.mesh)
         scene.objects.link(self.obj)
         
-    def compute(self,sigs):
+    def compute(self,sigs,plimit=0.1):
         """ fills the transformation space with all the transformations (pairing)"""
         
         for i in range(0,len(sigs)):
@@ -43,7 +43,7 @@ class Transformations: #maybe extend blender object or sth better?
                     break
                 # would like to eliminate double entries in signature space before!    
                 if (sigs[i].vert.co!=sigs[j].vert.co):                               
-                    self.add(Transf(signature1=sigs[i], signature2=sigs[k]))
+                    self.add(Transf(signature1=sigs[i], signature2=sigs[j]))
 
 class Transf:
     """ stores information of a transformation from transformations space """
@@ -64,6 +64,7 @@ class Transf:
             self.q = signature2.vert
             
             # normal calculation
+            self.trans = - self.p.co + self.q.co
             self.rnor = self.trans.normalized()
             # offset calculation in the normal direction
             # = projection of the midpoint in the normal direction
@@ -76,20 +77,28 @@ class Transf:
             self.calc_co()
         elif co:
             self.co = co
+            self.calc_r()
         else:
             raise Exception("Invalid arguments for Transformation")
                 
     def calc_co(self):
         self.co = Vector((
-                math.atan(self.rnor.y/self.rnor.x) if self.rnor.x != 0 else math.pi/2,
-                math.acos(self.rnor.z),
-                self.roff))
+                math.atan(self.rnor.y/self.rnor.x) if self.rnor.x != 0 else math.pi/2, #phi
+                math.acos(self.rnor.z), #theta
+                self.roff)) #off
+                
+    def calc_r(self):
+        self.rnor = Vector((
+            math.cos(self.co.x)*math.sin(self.co.y),
+            math.sin(self.co.x)*math.sin(self.co.y),
+            math.cos(self.co.y)))
+        self.roff = self.co.z
     
     def __mul__(self, scalar):
         return Transf(co=self.co*scalar)
     
     def __div__(self, scalar):
-        return self*(1/scalar)
+        return __mul__(self,(1/scalar))
     
     def __add__(a, b):
         return Transf(co=a.co+b.co)

@@ -24,6 +24,7 @@ def run(obj=None):
 
     import meanshift
     g.clusters=meanshift.cluster(g.transfs)
+    #g.clusters.plot(g.scene)
     meanshift.plot_clusters(g.clusters)
 
 #   print('clustering...')

@@ -1,6 +1,7 @@
 """ filling the signature space """
 
 import globals as g
+import random
 
 class Signature(object):
     """ holds a point together with its carachteristics """
@@ -16,7 +17,7 @@ def mksigs():
     g.sigs = []
     for vert in g.bm.verts:
         sig = Signature(vert)
-        if sig.curv > g.pc:      # Pruning
+        if sig.curv > g.pc and random.random()>0.5:      # Pruning
             g.sigs.append(sig)
         else:
             g.pruned.append(sig)
