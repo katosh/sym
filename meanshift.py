@@ -4,24 +4,26 @@ from transformations import Gamma
 def k(delta,bandwidth):
     return (bandwidth-delta)/bandwidth #hütchenfunktion als kernel
     
-def cluster(gamma,steps=100,bandwidth=0.3,densitythreshold=2,offset_threshold=0.001,cluster_resolution=0.01):
+def cluster(gamma,steps=100,bandwidth=0.3,densitythreshold=5,offset_threshold=0.001,cluster_resolution=0.01):
 
     meanshifts=Gamma(group=gamma.group)
     clusters=Gamma(group=gamma.group)
     d=gamma.group.d    
-    
+
     #compute meanshift
     steplimit=0
     for g in gamma: # starting point
         m=g
         for i in range(steps): # maximal count of shift steps to guarantee termination
-            weight=1 # not sure whether i shouldnt start with 0
-            m_old=m # save old m to calculate improvement
+            weight = 0
+            m_old  = m
+            m      = gamma.group.id()
             for x in gamma:
-                dist = d(x,m)
+                dist = d(x,m_old)                
                 if dist < bandwidth:
-                    m      += x*k(dist,bandwidth)
-                    weight +=   k(dist,bandwidth)
+                    kx = k(dist,bandwidth)
+                    m       = x*kx + m 
+                    weight +=   kx
                     #print ("old",m_old.co,"influenced by",x.co,"with dist",dist, "and weight",k(dist,bandwidth),"to",(m*(1/(weight))).co)
             m=m*(1/(weight))
             if d(m,m_old)<offset_threshold: break
@@ -35,7 +37,7 @@ def cluster(gamma,steps=100,bandwidth=0.3,densitythreshold=2,offset_threshold=0.
     
     # todo: sort meanshifts by weights...
     
-    # create clusters   
+    # create clusters
     for m in meanshifts:
         if m.weight > densitythreshold:
             found=False
@@ -50,5 +52,4 @@ def cluster(gamma,steps=100,bandwidth=0.3,densitythreshold=2,offset_threshold=0.
                 m.clusterverts=Gamma()
                 m.clusterverts.add(m.origin)               
                 clusters.add(m)
-
     return clusters

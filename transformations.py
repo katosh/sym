@@ -47,6 +47,9 @@ class Reflection:
             math.sin(self.co.x)*math.sin(self.co.y),
             math.cos(self.co.y)))
         self.roff = self.co.z
+        
+    def id():
+        return Reflection(co=Vector((0,0,0)))
     
     def __mul__(self, scalar): # todo: fix
         return Reflection(co=self.co*scalar)
