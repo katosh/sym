@@ -6,6 +6,6 @@ def plot_verts(name,vectors,scene=bpy.context.scene):
     mesh.from_pydata(vectors, [], [])
     obj = bpy.data.objects.new(name, mesh)
     scene.objects.link(obj)
-	
+    
 def plot_plane(name,normal,offset):
-	pass
+    pass
