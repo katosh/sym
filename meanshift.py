@@ -4,31 +4,31 @@ import tools
 def K(delta,bandwidth):
     return (bandwidth-delta)/bandwidth #hütchenfunktion als kernel
 
-class Cluster:
-    def __init__(self, weight, co):
+class Cluster(Transformations):
+    def __init__(self, weight, transf):
         self.weight = weight
+        #super.init(self)
 
     
 def cluster(gamma,steps=100,bandwidth=0.2,densitythreshold=5,offset_threshold=0.001,debug=True):
     clusters=[]
     for t in gamma: #startpunkt
-        m=t.co.copy()
-        for i in range(steps): #anzahl der shift schritte
+        m=t
+        for i in range(steps): # maximal count of shift steps to guarantee termination
             weight=0
-            offset=Vector((0,0,0))
+            offset=transformations.identity()
+            mold=m # save old m to calculate improvement
             for u in gamma:
-                delta = u.co-m
-                if 0 < delta.length < bandwidth:
-                    offset+=u.co*K(delta.length,bandwidth)
-                    weight+=K(delta.length,bandwidth)
-            mold=m
-            m=(m+offset)/(weight+1)
-            if (mold-m).length<offset_threshold:
+                dist = transformations.d(u,m)
+                if dist < bandwidth:
+                    m      += u*K(dist,bandwidth)
+                    weight +=   K(dist,bandwidth)
+            m=m/weight
+            if transformations.d(m,mold)<offset_threshold:
                 break
         if debug and i>steps/2:
             print (i+1,"steps")
         if weight>densitythreshold:
-            #print ("shifted",t.co,"to",m,"after",i+1,"steps with an offset of",offset.length,"and a density of",weight)
             found=False
             for cl in clusters:
                 if (cl[0]-m).length<offset_threshold*10: #sonst wird irgendwie nicht gut geclustert...

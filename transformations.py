@@ -1,7 +1,7 @@
 """ Pairing and making of the transformation space Gamma"""
 
 from mathutils import Vector
-import math
+import math 
 import bpy
 import bmesh
 import globals as g
@@ -12,7 +12,7 @@ class Transformations: #maybe extend blender object or sth better?
     transf_data=[] # will contain the transformations of type Transf
     # passiert hier das gleiche wie mit self.transf_data=[] in __init__?
     
-    def __init__(self,signatures,plimit = 0.1):
+    def __init__(self, signatures, plimit = 0.1):
         self.mesh = bpy.data.meshes.new("Transformations")
         self.obj  = bpy.data.objects.new("Transformations", self.mesh)
         self.bm   = bmesh.new()
@@ -39,57 +39,67 @@ class Transformations: #maybe extend blender object or sth better?
             # pairing with the followers in the array sorted ! by curvatures
             for j in range(i+1,len(sigs)):
                 # skip following signatures, if the curvature differ too much
-                if (abs(1 - (sigs[k].curv / sigs[i].curv))) > plimit
+                if (abs(1 - (sigs[j].curv / sigs[i].curv))) > plimit:
                     break
-                # would like to eliminate double entries before!    
-                if (sigs[i].vert.co!=sigs[k].vert.co):                               
+                # would like to eliminate double entries in signature space before!    
+                if (sigs[i].vert.co!=sigs[j].vert.co):                               
                     self.add(Transf(signature1=sigs[i], signature2=sigs[k]))
-            
 
 class Transf:
-    """ computes the transformation between two points of the geometry """
+    """ stores information of a transformation from transformations space """
     def __init__(self,
-            point1=None,
-            point2=None,
-            signature1=None,
-            signature2=None):
-        if signature1:
-            # principal curvatures TODO in signatures
+            signature1=None,signature2=None,
+            rnor=None,roff=None,
+            co=None):
+        """ either compute the transformation between two signatures or create a transformation from rnor, roff """
+        if signature1 and signature2:
             self.pc1 = signature1.pc1
             self.pc2 = signature1.pc2
-            # total curvature
             self.pc = signature1.curv
-            # point
             self.p = signature1.vert
-        else:
-            self.p = point1
-        if signature2:
+    
             self.qc1 = signature2.pc1
             self.qc2 = signature2.pc2
-            # total curvature
             self.qc = signature2.curv
-            # point
             self.q = signature2.vert
+            
+            # normal calculation
+            self.rnor = self.trans.normalized()
+            # offset calculation in the normal direction
+            # = projection of the midpoint in the normal direction
+            self.roff = self.rnor * (self.p.co + self.q.co) / 2
+            self.calc_co()
+            
+        elif rnor!=None and roff!=None:
+            self.rnor = rnor
+            self.roff = roff
+            self.calc_co()
+        elif co:
+            self.co = co
         else:
-            self.q = point2
-        self.scal = 1
-        self.trans = self.p.co - self.q.co
-        # safe diam globaly
-        g.diam = max(g.diam, self.trans.length)
-        # calculate rotation vector and angle
-        (self.rx, self.ry, self.rz, self.rr) = \
-                self.p.normal.rotation_difference(self.q.normal)
-        # normal calculation
-        self.rnor = self.trans
-        self.rnor.normalize()
-        # offset calculation in the normal direction
-        # = projection of the midpoint in the normal direction
-        self.roff = self.rnor * (self.p.co + self.q.co) / 2
-        #compute coordinates in transformation space
-        # (phi, theta, offset)
-        self.co = Vector((math.atan(self.rnor.y/self.rnor.x) if self.rnor.x != 0 else math.pi/2,math.acos(self.rnor.z),self.roff))
-        #compute min and max offsets
-        g.moff = max(self.roff, g.moff)
-        if g.mioff is None:
-            g.mioff = self.roff
-        g.mioff = min(self.roff, g.mioff)
+            raise Exception("Invalid arguments for Transformation")
+                
+    def calc_co(self):
+        self.co = Vector((
+                math.atan(self.rnor.y/self.rnor.x) if self.rnor.x != 0 else math.pi/2,
+                math.acos(self.rnor.z),
+                self.roff))
+    
+    def __mul__(self, scalar):
+        return Transf(co=self.co*scalar)
+    
+    def __div__(self, scalar):
+        return self*(1/scalar)
+    
+    def __add__(a, b):
+        return Transf(co=a.co+b.co)
+        
+def identity():
+    return Transf(rnor=Vector((0,0,1)), roff=0)
+    
+def d(t1, t2):
+    """ metric on the transformation space """
+    angle = t1.rnor.angle(t2.rnor)
+    angle = min(angle, math.pi - angle)
+    offset = abs(t1.roff-t2.roff)
+    return angle+offset
