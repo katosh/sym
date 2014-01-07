@@ -7,6 +7,7 @@ from mathutils import Vector
 # everything groupspecific is handled in this
 class Reflection:     
     """ class representing the !group of reflections, generating an element from signatures and providing a metric"""
+    
     def __init__(self,
             signature1=None,signature2=None,
             rnor=None,roff=None,
@@ -54,12 +55,18 @@ class Reflection:
         return Reflection(co=a.co+b.co)
     
     @staticmethod
-    def d(t1, t2): # most timeintensive function of the code so far... around 50% of time just for this
+    def d_real(t1, t2): # most timeintensive function of the code so far... around 50% of time just for this
         """ metric on the reflection space """
         angle = t1.rnor.angle(t2.rnor)
         angle = min(angle, math.pi - angle)
         offset = abs(t1.roff-t2.roff)
         return angle+offset
+        
+    @staticmethod
+    def d_fake(t1, t2):
+        return (t1.co-t2.co).length
+        
+    d = d_fake
         
 class Gamma:
     """ collection of transformations also containing the representing blender object """
@@ -75,6 +82,9 @@ class Gamma:
         
     def __len__(self):
         return len(self.elements)
+        
+    def __iter__(self):
+        return iter(self.elements)
         
     def add(self, tf):
         tf.bmvert = self.bm.verts.new(tf.co)

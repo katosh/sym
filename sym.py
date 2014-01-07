@@ -30,7 +30,7 @@ def run(obj=None):
     print('clustering...')
     clusters=cluster(gamma)
     print('found',len(clusters),'clusters')
-    clusters.plot(scene,label="clusters")   
+    clusters.plot(scene,label="clusters")
 
 def createsuzanne():
     import bmesh
@@ -50,13 +50,13 @@ if __name__ == "__main__":
     
 def test(p=False):
     import imp, cProfile, sym, signatures, transformations, meanshift
-    
-    imp.reload(imp)
-    imp.reload(sym)
-    imp.reload(signatures)
-    imp.reload(transformations)
-    imp.reload(meanshift)
-    
+    for i in range(2):
+        imp.reload(imp)
+        imp.reload(sym)
+        imp.reload(signatures)
+        imp.reload(transformations)
+        imp.reload(meanshift)
+        
     if p:
         cProfile.run('sym.run()')
     else:
