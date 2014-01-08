@@ -23,9 +23,15 @@ class Reflection:
             # offset calculation in the normal direction
             # = projection of the midpoint in the normal direction
             self.roff = self.rnor * (self.p.co + self.q.co) / 2
+            # further normalizing
+            if self.p.co.x < 0:
+                self.p = signature2.vert
+                self.q = signature1.vert
+                self.rnor = -self.rnor
+                self.roff = -self.roff
             self.calc_co()
             
-        elif rnor!=None and roff!=None:
+        elif rnor and roff:
             self.rnor = rnor
             self.roff = roff
             self.calc_co()

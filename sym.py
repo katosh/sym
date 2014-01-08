@@ -42,7 +42,7 @@ def createsuzanne():
     mesh = bpy.data.meshes.new("Apemesh")
     bm.to_mesh(mesh)
     ob_new = bpy.data.objects.new("Apeobj", mesh)
-    g.scene.objects.link(ob_new)
+    bpy.context.scene.objects.link(ob_new)
     return ob_new
 
 if __name__ == "__main__":
