@@ -41,21 +41,22 @@ def cluster(gamma,
             weight = 0
 
             # record particular one track
-            if step + slssteps == 618:
+            if step + slssteps == 330:
                 track.add(m)
             m_old  = m
             m = gamma.group.id()
             summe = Gamma(group=gamma.group)
+            weights = []
 
             for x in gamma:
                 dist = d(x,m_old)                
                 if abs(dist) < bandwidth:
                     kx = k(dist,bandwidth)
                     summe.add(x*kx)
-                    #m       = x*kx + m # really bad condition especially close to 0
-                    weight +=   abs(kx)
+                    weights.append(abs(kx))
                     #print ("old",m_old.co,"influenced by",x.co,"with dist",dist, "and weight",k(dist,bandwidth),"to",(m*(1/(weight))).co)
             m = summe.summe()
+            weight = sum(weights)
             if weight != 0:
                 m=m*(1/weight)
             else: # there are no more close points which is strange

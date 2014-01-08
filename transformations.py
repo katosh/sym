@@ -82,8 +82,13 @@ class Reflection:
 
     def normalize(self, calc=True):
         """ restriction on one hemisphere """
+        if self.roff < 0:
+            self.roff = -self.roff
+            self.rnor = -self.rnor
         if self.rnor.y < 0:
-            self.invert(calc)
+            self.invert(calc=False)
+        if calc:
+            self.calc_co()
     
     def __mul__(self, scalar):
         if scalar < 0: # return antipodal point
@@ -91,6 +96,9 @@ class Reflection:
             return Reflection(co=self.co*abs(scalar))
         else:
             return Reflection(co=self.co*scalar)
+
+    def __div__(self, scalar):
+        return 1/scalar*self
     
     def __add__(a, b):
         return Reflection(co=a.co+b.co)
@@ -175,7 +183,8 @@ class Gamma:
             return self.group.id()
         
     def compute(self,sigs,plimit=0.1):
-        """ fills the transformation space with all the transformations (pairing)"""        
+        """ fills the transformation space
+        with all the transformations (pairing)"""
         for i in range(0,len(sigs)):
             # pairing with the followers in the array sorted by curvatures for pruning!
             for j in range(i+1,len(sigs)):
