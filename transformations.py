@@ -24,7 +24,7 @@ class Reflection:
             # = projection of the midpoint in the normal direction
             self.roff = self.rnor * (self.p.co + self.q.co) / 2
             # further normalizing
-            if self.p.co.x < 0:
+            if self.roff < 0:
                 self.p = signature2.vert
                 self.q = signature1.vert
                 self.rnor = -self.rnor
