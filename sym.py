@@ -5,6 +5,7 @@ import bpy, bmesh
 from signatures import mksigs
 from transformations import Gamma
 from meanshift import cluster
+from verification import show_best_refelction
 
 def run(obj=None):
     scene=bpy.context.scene
@@ -32,6 +33,8 @@ def run(obj=None):
     print('found',len(clusters),'clusters')
     clusters.plot(scene,label="clusters")
 
+    show_best_refelction(clusters=clusters,scene=scene)
+
 def createsuzanne():
     import bmesh
     bm=bmesh.new()
@@ -42,7 +45,7 @@ def createsuzanne():
     mesh = bpy.data.meshes.new("Apemesh")
     bm.to_mesh(mesh)
     ob_new = bpy.data.objects.new("Apeobj", mesh)
-    # bpy.context.scene.objects.link(ob_new)
+    bpy.context.scene.objects.link(ob_new)
     return ob_new
 
 if __name__ == "__main__":

@@ -50,6 +50,24 @@ class Reflection:
         else:
             raise Exception("Invalid arguments for Transformation")
                 
+
+    def draw(self, scene=bpy.context.scene):
+        base = self.rnor * self.roff
+        rme = bpy.data.meshes.new('rNormal')
+        normalverts = [base, base + self.rnor]
+        normaledge = [[0, 1]]
+        rme.from_pydata(normalverts,normaledge,[])
+        ob_normal = bpy.data.objects.new("rNormal", rme)
+        scene.objects.link(ob_normal)
+        n = Vector() # self rotation in (phi,theta,0)
+        n.xyz = (self.co.x,
+            self.co.y,
+            0)
+        bpy.ops.mesh.primitive_plane_add(
+                radius=2, 
+                location = base, 
+                rotation=n.zyx)
+
     def calc_co(self):
         self.co = Vector((
                         math.atan2(self.rnor.y, self.rnor.x), #phi

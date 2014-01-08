@@ -1,12 +1,11 @@
-import globals as g
 import math
 import bpy
 from mathutils import Vector
 
 ### VERIFICATION ###
 
-def showplane():
-    base = g.bref.rnor * g.bref.roff
+def showplane(plane):
+    base = plane.rnor * plane.roff
     rme = bpy.data.meshes.new('rNormal')
     normalverts = [base, base + g.bref.rnor]
     normaledge = [[0, 1]]
@@ -15,10 +14,17 @@ def showplane():
     g.scene.objects.link(ob_normal)
 
     n = Vector() # plane rotation in (phi,theta,0)
-    n.xyz = (g.bref.rnor_phi(),
-        -g.bref.rnor_theta(),
+    n.xyz = (plane.co.x,
+        -plane.co.y,
         0)
     bpy.ops.mesh.primitive_plane_add(
-            radius=0.6 * g.diam, 
+            radius=5, 
             location = base, 
             rotation=n.zyx)
+
+def show_best_refelction(clusters=None, scene=bpy.context.scene):
+    best=clusters[0]
+    for cl in clusters:
+        if len(best.clusterverts) < len(cl.clusterverts):
+            best=cl
+    best.draw(scene)

@@ -65,7 +65,9 @@ def cluster(gamma,
             if m.rnor.y < 0:
                  print('track ',step+slssteps,' had to jump')
             m.normalize()
-            if abs(d(m,m_old))<offset_threshold: break
+            if abs(d(m,m_old))<offset_threshold: 
+                #print(step+slssteps,': i converged')
+                break
         if (i==steps-1): steplimit+=1
         m.origin=g
         m.weight=weight
