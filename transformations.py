@@ -116,10 +116,10 @@ class Reflection:
         angle1 = t1.rnor.angle(t2.rnor)
         angle2 = t1.rnor.angle(-t2.rnor)
         if angle1 <= angle2:
-            offset = abs(t1.roff-t2.roff)
+            offset = t1.roff-t2.roff
             return math.sqrt(angle1**2 + (offset**2))
         else:
-            offset = abs(t1.roff+t2.roff)
+            offset = t1.roff+t2.roff
             return -math.sqrt(angle2**2 + (offset**2))
         
     d = d_better_then_real
