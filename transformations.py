@@ -85,14 +85,14 @@ class Reflection:
         if self.rnor.y < 0:
             self.invert(calc)
     
-    def __mul__(self, scalar): # todo: fix
+    def __mul__(self, scalar):
         if scalar < 0: # return antipodal point
             self.invert()
             return Reflection(co=self.co*abs(scalar))
         else:
             return Reflection(co=self.co*scalar)
     
-    def __add__(a, b): # todo: fix
+    def __add__(a, b):
         return Reflection(co=a.co+b.co)
     
     @staticmethod
@@ -114,7 +114,7 @@ class Reflection:
             on oposing hemispheres of sphere,
             distance is then calculated to the antipodal point"""
         angle1 = t1.rnor.angle(t2.rnor)
-        angle2 = t1.rnor.angle(-t2.rnor)
+        angle2 = abs(math.pi - angle1)
         if angle1 <= angle2:
             offset = t1.roff-t2.roff
             return math.sqrt(angle1**2 + (offset**2))
@@ -136,6 +136,9 @@ class Gamma:
     
     def __getitem__(self, arg): # allows accessing the elements directly via []
         return self.elements[arg]
+
+    def __setitem__(self, arg, item):
+        self.elements[arg] = item
         
     def __len__(self):
         return len(self.elements)
@@ -152,6 +155,24 @@ class Gamma:
         self.obj  = bpy.data.objects.new(label, self.mesh)
         self.bm.to_mesh(self.mesh)
         scene.objects.link(self.obj)
+
+    def summe(self):
+        """ hierarchic sum/linear combination of elements """
+        length=len(self)
+        temp = self
+        result = None
+        while length > 1:
+            result = Gamma(group=self.group)
+            for i in range(math.floor(length/2)):
+                result.add(temp[2*i] + temp[2*i+1])
+            if length % 2 == 1:
+                result[0] = result[0] + temp[length-1]
+            temp = result
+            length = math.floor(length/2)
+        if result:
+            return result[0]
+        else:
+            return self.group.id()
         
     def compute(self,sigs,plimit=0.1):
         """ fills the transformation space with all the transformations (pairing)"""        
