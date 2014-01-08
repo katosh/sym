@@ -1,5 +1,6 @@
 from mathutils import Vector
 from transformations import Gamma
+import math
 
 def k(delta,bandwidth):
     return (bandwidth-delta)/bandwidth #hütchenfunktion als kernel
@@ -12,7 +13,17 @@ def cluster(gamma,steps=100,bandwidth=0.3,densitythreshold=5,offset_threshold=0.
 
     #compute meanshift
     steplimit=0
+    # to show proces
+    steps = len(gamma) # number of steps
+    step = 0 # current step
+    waitsteps = math.ceil(steps/100) # steps befor showing percentage
+    slssteps = 0 # steps since last showing of percentage
     for g in gamma: # starting point
+        slssteps += 1
+        if slssteps > waitsteps:
+            step += slssteps
+            print('process at ',math.floor(100*step/steps),' %')
+            slssteps = 0
         m=g
         for i in range(steps): # maximal count of shift steps to guarantee termination
             weight = 0
