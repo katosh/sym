@@ -23,8 +23,8 @@ class Reflection:
             # offset calculation in the normal direction
             # = projection of the midpoint in the normal direction
             self.roff = self.rnor * (self.p.co + self.q.co) / 2
-            # further normalizing
-            if self.roff < 0:
+            # further normalizing (restriction on right hemisphere)
+            if self.rnor.y < 0:
                 self.p = signature2.vert
                 self.q = signature1.vert
                 self.rnor = -self.rnor
@@ -43,9 +43,9 @@ class Reflection:
                 
     def calc_co(self):
         self.co = Vector((
-                math.atan(self.rnor.y/self.rnor.x) if self.rnor.x != 0 else math.pi/2, #phi
-                math.acos(self.rnor.z), #theta
-                self.roff)) #off
+                        math.atan2(self.rnor.y, self.rnor.x), #phi
+                        math.acos(self.rnor.z), #theta
+                        self.roff)) #off
                 
     def calc_r(self):
         self.rnor = Vector((
