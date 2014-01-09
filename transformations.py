@@ -14,6 +14,7 @@ class Reflection:
     p = None
     q = None
     rnor = None
+    diff = 0
 
     def __init__(self,
             signature1=None, signature2=None,
@@ -115,7 +116,7 @@ class Reflection:
         else:
             coo.x = self.co.x + math.pi
         coo.y = abs(math.pi - self.co.y)
-        coo.z = self.co.z
+        coo.z = -self.co.z
         return Reflection(co=coo,
                 normalize=False)
 
@@ -155,14 +156,16 @@ class Reflection:
         if t1.co == t2.co:
             return 0
         else:
-            angle1 = t1.rnor.angle(t2.rnor)
+            angle1 = abs(t1.rnor.angle(t2.rnor))
             angle2 = abs(math.pi - angle1)
             if angle1 <= angle2:
                 offset = t1.roff-t2.roff
-                return math.sqrt(angle1**2 + (offset**2))
+                da = angle1/(math.pi-angle1+0.00001)
+                return math.sqrt(da**2 + (offset**2))
             else:
                 offset = t1.roff+t2.roff
-                return -math.sqrt(angle2**2 + (offset**2))
+                da = angle2/(math.pi-angle2+0.00001)
+                return -math.sqrt(da**2 + (offset**2))
         
     d = d_better_then_real
         

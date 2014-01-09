@@ -10,13 +10,13 @@ def cluster(gamma,
         steps=100,
         bandwidth=0.3,
         densitythreshold=5,
-        offset_threshold=0.001,
+        offset_threshold=0.0001,
         cluster_resolution=0.01):
 
     meanshifts=Gamma(group=gamma.group)
     clusters=Gamma(group=gamma.group)
-    track=Gamma(group=gamma.group)
-    d=gamma.group.d    
+    d=gamma.group.d
+    ltrack = None # longest track
 
     #compute meanshift
     steplimit=0
@@ -35,11 +35,15 @@ def cluster(gamma,
             step += slssteps
             print('process at',math.floor(100*step/stepss),'%')
             slssteps = 0
+            
+            print('i jumped',d(m_old,m),'from',
+                    m_old.co,'to',m.co,'to reach the verts')
+            for t in test:
+                print(t.co,'with weight',t.weight)
 
         m=g
-        # record one particular track
-        if step + slssteps == 94:
-            track.add(m)
+        track=Gamma(group=gamma.group)
+        track.add(m)
         for i in range(steps): # maximal count of shift steps to guarantee termination
             weight = 0
             m_old  = m
@@ -66,23 +70,21 @@ def cluster(gamma,
             weight = sum(weights)
             if weight != 0:
                 m = summe.summe()*(1/weight)
-                if abs(d(m, m_old)) > 0.3:
-                    print('i jumped from',m_old.co,'to',m.co,'to reach the verts')
-                    for t in test:
-                        print(t.co,'with weight',t.weight)
             else: # there are no more close points which is strange
                 m=m_old
                 print(step+slssteps,': im lonly')
             m.normalize()
-            # record one particular track
-            if step + slssteps == 236:
-                track.add(m)
+            m.diff = abs(d(m,m_old))
+            track.add(m)
             if abs(d(m,m_old))<offset_threshold: 
                 #print(step+slssteps,': i converged')
                 break
-        if (i==steps-1): steplimit+=1
+        if (i==steps-1): 
+            steplimit+=1
         m.origin=g
         m.weight=weight
+        if ltrack is None or i > len(ltrack):
+            ltrack = track
         meanshifts.add(m)
         
     if steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
@@ -107,8 +109,9 @@ def cluster(gamma,
                 clusters.add(m)
     # plot the debugging track
     track.plot(bpy.context.scene,label="track")
-    print('the track went over the positions:')
-    for t in track:
-        print(t.co)
+    print('the longest track went over the positions:')
+    if ltrack:
+        for t in track:
+            print(t.co,'stepped',t.diff)
 
     return clusters
