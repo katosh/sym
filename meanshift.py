@@ -37,37 +37,46 @@ def cluster(gamma,
             slssteps = 0
 
         m=g
+        # record one particular track
+        if step + slssteps == 94:
+            track.add(m)
         for i in range(steps): # maximal count of shift steps to guarantee termination
             weight = 0
-
-            # record one particular track
-            if step + slssteps == 300:
-                track.add(m)
-
             m_old  = m
             # m = gamma.group.id()
             summe = Gamma(group=gamma.group)
             weights = []
+            test = Gamma(group=gamma.group)
 
             for x in gamma:
                 dist = d(x, m_old)                
                 if abs(dist) < bandwidth:
                     kx = k(abs(dist), bandwidth)
+                    x.weight=kx
                     if dist < 0:
-                        summe.add((-x-m)*kx)
+                        temp = -x
+                        temp.weight = -x.weight
+                        test.add(temp)
+                        summe.add(temp*kx)
                     else:
-                        summe.add((x-m)*kx)
+                        test.add(x)
+                        summe.add(x*kx)
                     weights.append(kx)
                     #print ("old",m_old.co,"influenced by",x.co,"with dist",dist, "and weight",k(dist,bandwidth),"to",(m*(1/(weight))).co)
             weight = sum(weights)
             if weight != 0:
-                m= summe.summe()*(1/weight) + m
+                m = summe.summe()*(1/weight)
+                if abs(d(m, m_old)) > 0.3:
+                    print('i jumped from',m_old.co,'to',m.co,'to reach the verts')
+                    for t in test:
+                        print(t.co,'with weight',t.weight)
             else: # there are no more close points which is strange
                 m=m_old
                 print(step+slssteps,': im lonly')
-            if m.rnor.y < 0:
-                print('track ',step+slssteps,' had to jump')
             m.normalize()
+            # record one particular track
+            if step + slssteps == 236:
+                track.add(m)
             if abs(d(m,m_old))<offset_threshold: 
                 #print(step+slssteps,': i converged')
                 break

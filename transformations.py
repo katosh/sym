@@ -2,6 +2,7 @@
 
 import math 
 import bpy, bmesh
+from copy import copy
 from mathutils import Vector
 
 # everything groupspecific is handled in this
@@ -12,6 +13,7 @@ class Reflection:
     # the points
     p = None
     q = None
+    rnor = None
 
     def __init__(self,
             signature1=None, signature2=None,
@@ -31,26 +33,23 @@ class Reflection:
         if self.p and self.q:
             self.trans = - self.p.co + self.q.co
             self.rnor = self.trans.normalized()
-            
             # offset calculation in the normal direction
             # = projection of the midpoint in the normal direction
             self.roff = self.rnor * (self.p.co + self.q.co) / 2
+            self.calc_co()
             # further normalizing (restriction on right hemisphere)
             if normalize:
                 self.normalize()
-            else:
-                self.calc_co()
-            
         elif rnor and roff:
             self.rnor = rnor
             self.roff = roff
+            self.calc_r()
             if normalize:
                 self.normalize(calc=False)
             else:
                 self.calc_co()
         elif co:
             self.co = co
-            self.calc_r()
             if normalize:
                 self.normalize()
         else:
@@ -89,10 +88,12 @@ class Reflection:
 
     def normalize(self):
         """ restriction on one hemisphere """
-        if self.rnor.y < 0:
-            self = -self
-        else:
-            self.calc_co()
+        if self.co.x > math.pi or self.co.x <= -math.pi:
+            self.co.x = (self.co.x + math.pi) % (2*math.pi) -math.pi
+        self.co.y = self.co.y % math.pi
+        if self.co.x < 0:
+            self.co = (-self).co
+            self.calc_r()
 
     @staticmethod
     def id():
@@ -107,10 +108,16 @@ class Reflection:
                  normalize=False)
 
     def __neg__(self):
-        self.roff = -self.roff
-        self.rnor = -self.rnor
-        self.calc_co()
-        return self
+        """ return antipodal point """
+        coo=Vector()
+        if self.co.x > math.pi/2:
+            coo.x = self.co.x -  math.pi
+        else:
+            coo.x = self.co.x + math.pi
+        coo.y = abs(math.pi - self.co.y)
+        coo.z = self.co.z
+        return Reflection(co=coo,
+                normalize=False)
 
     def __mul__(self, scalar):
         if scalar < 0: # return antipodal point
@@ -141,14 +148,21 @@ class Reflection:
         """ metric, if negative -> 
             on oposing hemispheres of sphere,
             distance is then calculated to the antipodal point"""
-        angle1 = t1.rnor.angle(t2.rnor)
-        angle2 = abs(math.pi - angle1)
-        if angle1 <= angle2:
-            offset = t1.roff-t2.roff
-            return math.sqrt(angle1**2 + (offset**2))
+        if t1.rnor is None:
+            t1.calc_r()
+        if t2.rnor is None:
+            t2.calc_r()
+        if t1.co == t2.co:
+            return 0
         else:
-            offset = t1.roff+t2.roff
-            return -math.sqrt(angle2**2 + (offset**2))
+            angle1 = t1.rnor.angle(t2.rnor)
+            angle2 = abs(math.pi - angle1)
+            if angle1 <= angle2:
+                offset = t1.roff-t2.roff
+                return math.sqrt(angle1**2 + (offset**2))
+            else:
+                offset = t1.roff+t2.roff
+                return -math.sqrt(angle2**2 + (offset**2))
         
     d = d_better_then_real
         
@@ -187,15 +201,15 @@ class Gamma:
     def summe(self):
         """ hierarchic sum/linear combination of elements """
         length=len(self)
-        temp = self
-        result = None
+        result = self
+        temp = None
         while length > 1:
-            result = Gamma(group=self.group)
+            temp = Gamma(group=self.group)
             for i in range(math.floor(length/2)):
-                result.add(temp[2*i] + temp[2*i+1])
+                temp.add(result[2*i] + result[2*i+1])
             if length % 2 == 1:
-                result[0] = result[0] + temp[length-1]
-            temp = result
+                temp[0] = temp[0] + result[length-1]
+            result = temp
             length = math.floor(length/2)
         if result:
             return result[0]
@@ -211,6 +225,6 @@ class Gamma:
                 # skip following signatures, if the curvature differ too much
                 if (abs(1 - (sigs[j].curv / sigs[i].curv))) > plimit:
                     break
-                # would like to eliminate double entries in signature space before!    
+                # would like to eliminate double entries in signature space before!
                 if (sigs[i].vert.co!=sigs[j].vert.co):
                     self.add(self.group(signature1=sigs[i], signature2=sigs[j]))
