@@ -25,6 +25,6 @@ def showplane(plane):
 def show_best_refelction(clusters=None, scene=bpy.context.scene):
     best=clusters[0]
     for cl in clusters:
-        if len(best.clusterverts) < len(cl.clusterverts):
+        if best.density < cl.density:
             best=cl
     best.draw(scene)

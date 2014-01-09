@@ -21,7 +21,7 @@ def cluster(gamma,
     #compute meanshift
     steplimit=0
 
-    # to show status
+    # show process parameters
     stepss = len(gamma) # number of steps
     step = 0 # current step
     waitsteps = math.ceil(stepss/100) # steps befor showing percentage
@@ -29,41 +29,44 @@ def cluster(gamma,
 
     for g in gamma: # starting point
 
-        # show status
+        # show process
         slssteps += 1
         if slssteps > waitsteps:
             step += slssteps
-            print('process at ',math.floor(100*step/stepss),' %')
+            print('process at',math.floor(100*step/stepss),'%')
             slssteps = 0
 
         m=g
         for i in range(steps): # maximal count of shift steps to guarantee termination
             weight = 0
 
-            # record particular one track
-            if step + slssteps == 330:
+            # record one particular track
+            if step + slssteps == 300:
                 track.add(m)
+
             m_old  = m
-            m = gamma.group.id()
+            # m = gamma.group.id()
             summe = Gamma(group=gamma.group)
             weights = []
 
             for x in gamma:
-                dist = d(x,m_old)                
+                dist = d(x, m_old)                
                 if abs(dist) < bandwidth:
-                    kx = k(dist,bandwidth)
-                    summe.add(x*kx)
-                    weights.append(abs(kx))
+                    kx = k(abs(dist), bandwidth)
+                    if dist < 0:
+                        summe.add((-x-m)*kx)
+                    else:
+                        summe.add((x-m)*kx)
+                    weights.append(kx)
                     #print ("old",m_old.co,"influenced by",x.co,"with dist",dist, "and weight",k(dist,bandwidth),"to",(m*(1/(weight))).co)
-            m = summe.summe()
             weight = sum(weights)
             if weight != 0:
-                m=m*(1/weight)
+                m= summe.summe()*(1/weight) + m
             else: # there are no more close points which is strange
                 m=m_old
                 print(step+slssteps,': im lonly')
             if m.rnor.y < 0:
-                 print('track ',step+slssteps,' had to jump')
+                print('track ',step+slssteps,' had to jump')
             m.normalize()
             if abs(d(m,m_old))<offset_threshold: 
                 #print(step+slssteps,': i converged')
@@ -90,6 +93,7 @@ def cluster(gamma,
             if not found:
                 #print ("creating cluster at","m")
                 m.clusterverts=Gamma()
+                m.density = m.weight
                 m.clusterverts.add(m.origin)               
                 clusters.add(m)
     # plot the debugging track

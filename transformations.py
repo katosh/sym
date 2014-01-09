@@ -17,7 +17,8 @@ class Reflection:
             signature1=None, signature2=None,
             vert1=None, vert2=None,
             rnor=None, roff=None,
-            co=None):
+            co=None,
+            normalize=True):
         """ create a transformation from either two signatures, 
         rnor/roff or coordinates in transf. space """
         if signature1 and signature2:
@@ -35,18 +36,23 @@ class Reflection:
             # = projection of the midpoint in the normal direction
             self.roff = self.rnor * (self.p.co + self.q.co) / 2
             # further normalizing (restriction on right hemisphere)
-            self.normalize(calc=False)
-            self.calc_co()
+            if normalize:
+                self.normalize()
+            else:
+                self.calc_co()
             
         elif rnor and roff:
             self.rnor = rnor
             self.roff = roff
-            self.normalize(calc=False)
-            self.calc_co()
+            if normalize:
+                self.normalize(calc=False)
+            else:
+                self.calc_co()
         elif co:
             self.co = co
             self.calc_r()
-            #self.normalize()
+            if normalize:
+                self.normalize()
         else:
             raise Exception("Invalid arguments for Transformation")
                 
@@ -70,9 +76,9 @@ class Reflection:
 
     def calc_co(self):
         self.co = Vector((
-                        math.atan2(self.rnor.y, self.rnor.x), #phi
-                        math.acos(self.rnor.z), #theta
-                        self.roff)) #off
+            math.atan2(self.rnor.y, self.rnor.x), #phi
+            math.acos(self.rnor.z), #theta
+            self.roff)) #offset
                 
     def calc_r(self):
         self.rnor = Vector((
@@ -81,45 +87,41 @@ class Reflection:
             math.cos(self.co.y)))
         self.roff = self.co.z
 
-    def antipodal(self):
-        """ returns the reflections antipodal equivalent """
-        return Reflection(vert1=self.q, vert2=self.p)
-
-    def invert(self, calc=True):
-        """ inverts the reflection to its antipodal equivalent """
-        temp = self.p
-        self.p = self.q
-        self.q = temp
-        self.rnor = -self.rnor
-        if calc:
+    def normalize(self):
+        """ restriction on one hemisphere """
+        if self.rnor.y < 0:
+            self = -self
+        else:
             self.calc_co()
 
     @staticmethod
     def id():
         return Reflection(co=Vector((0,0,0)))
-
-    def normalize(self, calc=True):
-        """ restriction on one hemisphere """
-        if self.roff < 0:
-            self.roff = -self.roff
-            self.rnor = -self.rnor
-        if self.rnor.y < 0:
-            self.invert(calc=False)
-        if calc:
-            self.calc_co()
     
+    def __add__(a, b):
+        return Reflection(co=a.co+b.co,
+                 normalize=False)
+
+    def __sub__(a, b):
+        return Reflection(co=a.co-b.co,
+                 normalize=False)
+
+    def __neg__(self):
+        self.roff = -self.roff
+        self.rnor = -self.rnor
+        self.calc_co()
+        return self
+
     def __mul__(self, scalar):
         if scalar < 0: # return antipodal point
-            self.invert()
-            return Reflection(co=self.co*abs(scalar))
+            return Reflection(co=-self.co*abs(scalar),
+                 normalize=False)
         else:
-            return Reflection(co=self.co*scalar)
+            return Reflection(co=self.co*scalar,
+                 normalize=False)
 
     def __div__(self, scalar):
         return 1/scalar*self
-    
-    def __add__(a, b):
-        return Reflection(co=a.co+b.co)
     
     @staticmethod
     def d_real(t1, t2): # most timeintensive function of the code so far... around 50% of time just for this
@@ -133,7 +135,7 @@ class Reflection:
     def d_fake(t1, t2):
         return (t1.co-t2.co).length
 
-# i know it takes long but its worth it
+    # i know it takes long but its worth it
     @staticmethod
     def d_better_then_real(t1, t2):
         """ metric, if negative -> 
