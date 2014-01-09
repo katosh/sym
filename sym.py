@@ -6,6 +6,8 @@ from signatures import mksigs
 from transformations import Gamma
 from meanshift import cluster
 
+import transformations
+
 def run(obj=None):
     scene=bpy.context.scene
     bm=bmesh.new()
@@ -18,11 +20,11 @@ def run(obj=None):
     scene=bpy.context.scene
     
     print('calculating signatures...')
-    sigs = mksigs(bm.verts)
+    sigs = mksigs(bpy.context.object.data.vertices)
     print('calculated',len(sigs),'signatures')
 
     print('filling the transformation space...')
-    gamma = Gamma(sigs)
+    gamma = Gamma(sigs,group=transformations.Translation)
     print('found',len(gamma),'transformations')
     gamma.plot(scene,label="transformations")
     
@@ -31,6 +33,8 @@ def run(obj=None):
     clusters=cluster(gamma)
     print('found',len(clusters),'clusters')
     clusters.plot(scene,label="clusters")
+    
+    return sigs,gamma,clusters
 
 def createsuzanne():
     import bmesh
@@ -60,4 +64,22 @@ def test(p=False):
     if p:
         cProfile.run('sym.run()')
     else:
-        sym.run()
+        return sym.run()
+      
+
+def sel_cluster(clusters):
+    bpy.context.scene.objects.active = clusters.obj
+    bpy.ops.object.mode_set(mode='EDIT')
+    bm = bmesh.from_edit_mesh(bpy.context.active_object.data)
+    sel_cluster_indices = [vert.index for vert in bm.verts if vert.select]
+    for index in sel_cluster_indices:
+        sel_transformations(clusters[index].clusterverts)
+    
+def sel_transformations(transformations):
+    obj = transformations[0].gamma.obj
+    bpy.context.scene.objects.active = obj
+    bpy.ops.object.mode_set(mode='EDIT') # this does not work for some reason
+    return
+    bm = bmesh.from_edit_mesh(obj.data)
+    for t in transformations:
+        bm.verts[t.index].select=True      

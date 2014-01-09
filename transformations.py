@@ -70,6 +70,36 @@ class Reflection:
         return (t1.co-t2.co).length
         
     d = d_fake
+    
+class Translation:     
+    """ class representing the !group of reflections, generating an element from signatures and providing a metric"""
+    
+    def __init__(self,
+            signature1=None,signature2=None,
+            co=None):
+        """ create a transformation from either two signatures, rnor/roff or coordinates in transf. space """
+        if signature1 and signature2:
+            self.p = signature1.vert
+            self.q = signature2.vert
+            
+            self.co = - self.p.co + self.q.co
+        elif co:
+            self.co = co
+        else:
+            raise Exception("Invalid arguments for Transformation")
+        
+    def id():
+        return Translation(co=Vector((0,0,0)))
+    
+    def __mul__(self, scalar):
+        return Reflection(co=self.co*scalar)
+    
+    def __add__(a, b):
+        return Reflection(co=a.co+b.co)
+        
+    @staticmethod
+    def d(t1, t2):
+        return (t1.co-t2.co).length
         
 class Gamma:
     """ collection of transformations also containing the representing blender object """
@@ -91,11 +121,14 @@ class Gamma:
         
     def add(self, tf):
         tf.bmvert = self.bm.verts.new(tf.co)
+        if not hasattr(tf,'index'): tf.index=len(self.elements)
+        if not hasattr(tf,'gamma'): tf.gamma=self
         self.elements.append(tf)        
     
     def plot(self,scene,label="Plot"):
         self.mesh = bpy.data.meshes.new(label)
         self.obj  = bpy.data.objects.new(label, self.mesh)
+        self.bm.verts.index_update()
         self.bm.to_mesh(self.mesh)
         scene.objects.link(self.obj)
         

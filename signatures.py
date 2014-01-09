@@ -8,11 +8,13 @@ class Signature:
         """ computes the signature of the vertex vert """ 
         self.vert = vert
         # TODO: better curvature calculation
-        self.curv = vert.calc_shell_factor() # "sharpness of the vertex"
+        #self.curv = vert.calc_shell_factor() # "sharpness of the vertex"
+        self.curv = 2
+        
         self.pc1 = None # TODO: principal curvature 1 (vector)
         self.pc2 = None # TODO: principal curvature 2 (vector)
 
-def mksigs(verts,curvpruning=1.5,percentage=0):
+def mksigs(verts,curvpruning=1.5,percentage=0.95):
     """ fill the signature space
         verts: a list of vertices
         curvpruning: the minimal amount of curvature to pass the pruning step
