@@ -23,10 +23,7 @@ def showplane(plane):
             rotation=n.zyx)
 
 def show_best_refelction(clusters=None, scene=bpy.context.scene):
-    best=clusters[0]
     print('the cluster densities are...')
     for cl in clusters:
         print(cl.density,'at',cl.co)
-        if best.density < cl.density:
-            best=cl
-    best.draw(scene)
+        cl.draw(scene)
