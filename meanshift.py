@@ -57,7 +57,7 @@ def cluster(gamma,
                 if abs(dist) < bandwidth:
                     kx = k(abs(dist), bandwidth)
                     x.weight=kx
-                    if dist < 0:
+                    if dist<0:
                         temp = -x
                         temp.weight = -x.weight
                         test.add(temp)
@@ -71,10 +71,10 @@ def cluster(gamma,
             if weight != 0:
                 m = summe.summe()*(1/weight)
             else: # there are no more close points which is strange
-                m=m_old
+                m = m_old
                 print(step+slssteps,': im lonly')
             m.normalize()
-            m.diff = abs(d(m,m_old))
+            m.diff = abs(d(m,m_old)) # just for track record
             track.add(m)
             if abs(d(m,m_old))<offset_threshold: 
                 #print(step+slssteps,': i converged')

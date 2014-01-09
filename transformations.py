@@ -157,14 +157,16 @@ class Reflection:
             return 0
         else:
             angle1 = abs(t1.rnor.angle(t2.rnor))
-            angle2 = abs(math.pi - angle1)
+            angle2 = math.pi - angle1
             if angle1 <= angle2:
                 offset = t1.roff-t2.roff
-                da = angle1/(math.pi-angle1+0.00001)
+                #da = angle1 * (0.5/(math.pi-angle1+1))
+                da = angle1 * (0.5/(math.pi/2 - angle1 + 1))
                 return math.sqrt(da**2 + (offset**2))
             else:
                 offset = t1.roff+t2.roff
-                da = angle2/(math.pi-angle2+0.00001)
+                #da = angle2 * (0.5/(math.pi-angle2+1))
+                da = angle2 * (0.5/(math.pi/2 - angle2 + 1))
                 return -math.sqrt(da**2 + (offset**2))
         
     d = d_better_then_real
