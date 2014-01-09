@@ -1,3 +1,4 @@
+from __future__ import print_function # overwriting proces status line
 from mathutils import Vector
 from transformations import Gamma
 import math
@@ -16,7 +17,7 @@ def cluster(gamma,
     meanshifts=Gamma(group=gamma.group)
     clusters=Gamma(group=gamma.group)
     d=gamma.group.d
-    ltrack = None # longest track
+    ltrack = Gamma(group=gamma.group) # longest track
 
     #compute meanshift
     steplimit=0
@@ -24,7 +25,7 @@ def cluster(gamma,
     # show process parameters
     stepss = len(gamma) # number of steps
     step = 0 # current step
-    waitsteps = math.ceil(stepss/100) # steps befor showing percentage
+    waitsteps = math.ceil(stepss/1000) # steps befor showing percentage
     slssteps = 0 # steps since last showing of percentage
 
     for g in gamma: # starting point
@@ -33,7 +34,7 @@ def cluster(gamma,
         slssteps += 1
         if slssteps > waitsteps:
             step += slssteps
-            print('process at',math.floor(100*step/stepss),'%')
+            print(' process at',math.floor(1000*step/stepss)/10,'%', end='\r')
             slssteps = 0
             
             #print('i jumped',d(m_old,m),'from',
@@ -41,7 +42,7 @@ def cluster(gamma,
             #for t in test:
             #    print(t.co,'with weight',t.weight)
 
-        m=g
+        m = g
         track=Gamma(group=gamma.group)
         track.add(m)
         for i in range(steps): # maximal count of shift steps to guarantee termination
@@ -81,10 +82,13 @@ def cluster(gamma,
                 break
         if (i==steps-1): 
             steplimit+=1
-        m.origin=g
-        m.weight=weight
-        if ltrack is None or i > len(ltrack):
-            ltrack = track
+        m.origin = g
+        m.weight = weight
+        if i > len(ltrack):
+            #ltrack = Gamma(group=gamma.group)
+            #for t in track:
+            #    ltrack.add(t)
+            ltrack=track
         meanshifts.add(m)
         
     if steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
@@ -108,10 +112,10 @@ def cluster(gamma,
                 m.clusterverts.add(m.origin)               
                 clusters.add(m)
     # plot the debugging track
-    track.plot(bpy.context.scene,label="track")
-    print('the longest track went over the positions:')
+    ltrack.plot(bpy.context.scene,label="longest shift")
+    print('the longest shift went over the positions:')
     if ltrack:
-        for t in track:
+        for t in ltrack:
             print(t.co,'stepped',t.diff)
 
     return clusters
