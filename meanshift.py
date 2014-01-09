@@ -36,10 +36,10 @@ def cluster(gamma,
             print('process at',math.floor(100*step/stepss),'%')
             slssteps = 0
             
-            print('i jumped',d(m_old,m),'from',
-                    m_old.co,'to',m.co,'to reach the verts')
-            for t in test:
-                print(t.co,'with weight',t.weight)
+            #print('i jumped',d(m_old,m),'from',
+            #        m_old.co,'to',m.co,'to reach the verts')
+            #for t in test:
+            #    print(t.co,'with weight',t.weight)
 
         m=g
         track=Gamma(group=gamma.group)

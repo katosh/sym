@@ -213,7 +213,7 @@ class Gamma:
             if length % 2 == 1:
                 temp[0] = temp[0] + result[length-1]
             result = temp
-            length = math.floor(length/2)
+            length = len(result)
         if result:
             return result[0]
         else:
