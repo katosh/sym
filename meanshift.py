@@ -9,10 +9,11 @@ def k(delta,bandwidth):
     
 def cluster(gamma,
         steps=100,
-        bandwidth=0.3,
-        densitythreshold=5,
+        bandwidth=0.1,
+        densitythreshold=0,
         offset_threshold=0.0001,
-        cluster_resolution=0.01):
+        cluster_resolution=0.01,
+        grid_size=0.01):
 
     meanshifts=Gamma(group=gamma.group)
     clusters=Gamma(group=gamma.group)
@@ -45,7 +46,7 @@ def cluster(gamma,
 
         done = False
         for p in checked:
-            if abs(d(g,p)) < 0.1:
+            if abs(d(g,p)) < grid_size:
                 done = True
                 break
         checked.add(g)
