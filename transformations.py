@@ -91,12 +91,12 @@ class Reflection:
         """ restriction on one hemisphere """
         normed = False
         if self.co.x > math.pi or self.co.x <= -math.pi:
-            self.co.x = (self.co.x + math.pi) % (2*math.pi) -math.pi
+            self.co.x = (self.co.x + math.pi  % (2*math.pi)) - math.pi
             normed = True
         if self.co.y >= math.pi:
             self.co.y = self.co.y % math.pi
             normed = True
-        if self.co.x < 0:
+        if self.co.x < -math.pi/2 or self.co.x > math.pi/2:
             self.co = (-self).co
             self.calc_r()
             normed = True
@@ -155,10 +155,8 @@ class Reflection:
         """ metric, if negative -> 
             on oposing hemispheres of sphere,
             distance is then calculated to the antipodal point"""
-        if t1.rnor is None:
+        if t1.rnor is None or t2.rnor is None:
             t1.calc_r()
-        if t2.rnor is None:
-            t2.calc_r()
         if t1.co == t2.co:
             return 0
         else:
