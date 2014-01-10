@@ -5,6 +5,7 @@ import bpy, bmesh
 from signatures import mksigs
 from transformations import Gamma
 from meanshift import cluster
+from verification import show_best_reflection
 
 import transformations
 
@@ -33,12 +34,13 @@ def run(obj=None):
     print('found',len(clusters),'clusters')
     clusters.plot(scene,label="clusters")
 
+    show_best_reflection(clusters=clusters,scene=scene)
+
     # using globals to save last calculated spaces for external use (selections)
     # todo: try to somehow append the spaces to the blender plot objects
     global lastclusters, lastgamma
     lastclusters=clusters
     lastgamma=gamma
-
     return sigs,gamma,clusters
 
 def debug(profile=True):
