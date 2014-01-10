@@ -12,7 +12,7 @@ import transformations
 if __name__ == "__main__": # when started from console, directly run
     debug()
 
-def run(obj=None):
+def run(obj=None, **args):
     """ runs symmetry detection on the obj
     active object is taken if none is given"""
     scene=bpy.context.scene
@@ -20,7 +20,7 @@ def run(obj=None):
         obj = bpy.context.object # take active object
 
     print('calculating signatures...')
-    sigs = Signatures(obj)
+    sigs = Signatures(obj,**args)
     print('calculated',len(sigs),'signatures')
 
     print('filling the transformation space...')
@@ -43,14 +43,22 @@ def run(obj=None):
     lastgamma=gamma
     return sigs,gamma,clusters
 
-def debug(profile=True):
+def debug(profile=True,prune_perc=0.5, **args):
     """ reload modules, invoke profiler """
-    import cProfile
     rel()
     if profile:
-        cProfile.run('sym.run()',sort='cumtime')
+        import cProfile, pstats, io
+        pr = cProfile.Profile()
+        pr.enable()
+        run(prune_perc=prune_perc, **args)
+        pr.disable()
+        s = io.StringIO()
+        ps = pstats.Stats(pr, stream=s).strip_dirs()
+        ps.sort_stats('cumulative')
+        ps.print_stats(10)
+        print(s.getvalue())
     else:
-        return run()
+        return run(**args)
 
 def rel():
     """ reload modules """
