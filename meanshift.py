@@ -17,9 +17,8 @@ def cluster(gamma,
     meanshifts=Gamma(group=gamma.group)
     clusters=Gamma(group=gamma.group)
     checked=Gamma(group=gamma.group)
+    track=Gamma(group=gamma.group)
     d=gamma.group.d
-    #ltrack = Gamma(group=gamma.group) # longest track
-    tracks=[] # recording the meanshifts
 
     #compute meanshift
     steplimit=0
@@ -53,7 +52,6 @@ def cluster(gamma,
         if done: continue
 
         m = g
-        track=Gamma(group=gamma.group)
         track.add(m)
         for i in range(steps): # maximal count of shift steps to guarantee termination
             weight = 0
@@ -100,7 +98,6 @@ def cluster(gamma,
             steplimit+=1
         m.origin = g
         m.weight = weight
-        tracks.append(track)
         meanshifts.add(m)
         
     if steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
@@ -124,8 +121,5 @@ def cluster(gamma,
                 m.clusterverts.add(m.origin)               
                 clusters.add(m)
     # plot the debugging track
-    i=0
-    for track in tracks:
-        track.plot(bpy.context.scene,label="track"+str(i))
-        i += 1
+    track.plot(bpy.context.scene,label="track")
     return clusters
