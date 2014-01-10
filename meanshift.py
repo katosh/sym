@@ -66,16 +66,15 @@ def cluster(gamma,
                 if abs(dist) < bandwidth:
                     kx = k(abs(dist), bandwidth)
                     x.weight=kx
-                    if dist<0:
+                    if dist >= 0:
+                        test.add(x)
+                        summe.add(x*kx)
+                    else: # just for projective Space
                         temp = -x
                         temp.weight = -x.weight
                         test.add(temp)
                         summe.add(temp*kx)
-                    else:
-                        test.add(x)
-                        summe.add(x*kx)
                     weights.append(kx)
-                    #print ("old",m_old.co,"influenced by",x.co,"with dist",dist, "and weight",k(dist,bandwidth),"to",(m*(1/(weight))).co)
             weight = sum(weights)
             if weight != 0:
                 m = summe.summe()*(1/weight)
@@ -83,7 +82,6 @@ def cluster(gamma,
                 m = m_old
                 print(step+slssteps,': im lonly')
             normed = m.normalize()
-            m.diff = abs(d(m,m_old)) # just for track record
 
             # tracking the shift
             track.add(m)
@@ -92,7 +90,6 @@ def cluster(gamma,
                 track.bm.edges.new(edge)
 
             if abs(d(m,m_old))<offset_threshold: 
-                #print(step+slssteps,': i converged')
                 break
         if (i==steps-1): 
             steplimit+=1
@@ -101,8 +98,6 @@ def cluster(gamma,
         meanshifts.add(m)
         
     if steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
-    
-    # todo: sort meanshifts by weights...
     
     # create clusters
     for m in meanshifts:
@@ -115,7 +110,6 @@ def cluster(gamma,
                     c.clusterverts.add(m.origin)
                     break
             if not found:
-                #print ("creating cluster at","m")
                 m.clusterverts=Gamma()
                 m.density = m.weight
                 m.clusterverts.add(m.origin)               

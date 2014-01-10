@@ -196,6 +196,9 @@ class Gamma:
         
     def __iter__(self):
         return iter(self.elements)
+
+    def sort(self,**kwargs):
+        self.elements.sort(**kwargs)
         
     def add(self, tf):
         tf.bmvert = self.bm.verts.new(tf.co)
