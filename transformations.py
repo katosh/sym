@@ -194,7 +194,7 @@ class Gamma:
         return iter(self.elements)
         
     def add(self, tf):
-        self.bm.verts.new(tf.co)
+        tf.bmvert = self.bm.verts.new(tf.co)
         self.elements.append(tf)        
     
     def plot(self,scene,label="Plot"):
