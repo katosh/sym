@@ -8,78 +8,89 @@ from meanshift import cluster
 
 import transformations
 
+if __name__ == "__main__": # when started from console, directly run
+    run()
+
 def run(obj=None):
+    """ runs symmetry detection on the obj
+    active object is taken if none is given"""
     scene=bpy.context.scene
-    bm=bmesh.new()
-    
-    if type(obj)==bpy.types.Object:
-        bm.from_mesh(obj.data)
-    else:
-        bm.from_mesh(bpy.context.object.data)
-    
-    scene=bpy.context.scene
-    
+    if obj == None:
+        obj = bpy.context.object # take active object
+
     print('calculating signatures...')
-    sigs = mksigs(bpy.context.object.data.vertices)
+    sigs = mksigs(obj.data.vertices)
     print('calculated',len(sigs),'signatures')
 
     print('filling the transformation space...')
-    gamma = Gamma(sigs,group=transformations.Translation)
+    gamma = Gamma(sigs,group=transformations.Reflection)
     print('found',len(gamma),'transformations')
     gamma.plot(scene,label="transformations")
-    
+
 
     print('clustering...')
-    clusters=cluster(gamma)
+    clusters = cluster(gamma)
     print('found',len(clusters),'clusters')
     clusters.plot(scene,label="clusters")
-    
+
+    # using globals to save last calculated spaces for external use (selections)
+    # todo: try to somehow append the spaces to the blender plot objects
+    global lastclusters, lastgamma
+    lastclusters=clusters
+    lastgamma=gamma
+
     return sigs,gamma,clusters
 
-def createsuzanne():
-    import bmesh
-    bm=bmesh.new()
-    bpy.ops.object.delete()            # deleting the stupid cube
-    bpy.ops.mesh.primitive_monkey_add()
-    bpy.ops.object.delete()
-    bm.from_mesh(bpy.data.meshes["Suzanne"]) # get mesh data from model
-    mesh = bpy.data.meshes.new("Apemesh")
-    bm.to_mesh(mesh)
-    ob_new = bpy.data.objects.new("Apeobj", mesh)
-    g.scene.objects.link(ob_new)
-    return ob_new
-
-if __name__ == "__main__":
-    run(createsuzanne())
-    
-def test(p=False):
-    import imp, cProfile, sym, signatures, transformations, meanshift
-    for i in range(2):
-        imp.reload(imp)
-        imp.reload(sym)
-        imp.reload(signatures)
-        imp.reload(transformations)
-        imp.reload(meanshift)
-        
-    if p:
+def debug(profile=True):
+    """ reload modules, invoke profiler """
+    import cProfile
+    rel()
+    if profile:
         cProfile.run('sym.run()')
     else:
-        return sym.run()
-      
+        return run()
 
-def sel_cluster(clusters):
-    bpy.context.scene.objects.active = clusters.obj
-    bpy.ops.object.mode_set(mode='EDIT')
-    bm = bmesh.from_edit_mesh(bpy.context.active_object.data)
-    sel_cluster_indices = [vert.index for vert in bm.verts if vert.select]
-    for index in sel_cluster_indices:
-        sel_transformations(clusters[index].clusterverts)
-    
+def rel():
+    """ reload modules """
+    import imp, sym, signatures, transformations, meanshift
+    imp.reload(sym)
+    imp.reload(signatures)
+    imp.reload(transformations)
+    imp.reload(meanshift)
+
+### Methods for selection, maybe put into own module
+
+def sel_selected_cluster(clusters=None):
+    """ take selected clusters and select according transformations """
+    if clusters==None:
+        global lastclusters
+        clusters = lastclusters
+    for cluster_index in get_sel_vert(clusters.obj):
+        sel_transformations(clusters[cluster_index].clusterverts)
+
 def sel_transformations(transformations):
-    obj = transformations[0].gamma.obj
-    bpy.context.scene.objects.active = obj
-    bpy.ops.object.mode_set(mode='EDIT') # this does not work for some reason
-    return
-    bm = bmesh.from_edit_mesh(obj.data)
-    for t in transformations:
-        bm.verts[t.index].select=True      
+    bm = get_bmesh(transformations[0].gamma.obj)
+    sel_verts(transformations[0].gamma.obj, [t.index for t in transformations])
+
+def sel_verts(obj, vert_indices, select=True):
+    """ selects the given vertices from the Object via their index"""
+    bm = get_bmesh(obj, edit=True)
+    for i in vert_indices:
+        bm.verts[i].select = select
+
+def get_sel_vert(obj):
+    """ returns indices of selected vertices """
+    bm = get_bmesh(obj)
+    return [vert.index for vert in bm.verts if vert.select]
+
+def get_bmesh(obj,edit=False):
+    """ returns the BMesh to the object, writeable if edit is True """
+    if edit:
+        bpy.context.scene.objects.active = obj
+        bpy.ops.object.mode_set(mode='EDIT')
+    if obj.mode=='EDIT':
+        return bmesh.from_edit_mesh(obj.data)
+    elif obj.mode=='OBJECT':
+        bm = bmesh.new()
+        bm.from_mesh(obj.data)
+        return bm
