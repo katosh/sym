@@ -10,6 +10,11 @@ class Reflection:
     """ class representing the !group of reflections,
     generating an element from signatures and providing a metric"""
 
+    p = None
+    q = None
+    rnor = None
+    diff = None
+
     def __init__(self,
             signature1=None, signature2=None,
             vert1=None, vert2=None,
