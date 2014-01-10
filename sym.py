@@ -47,7 +47,7 @@ def debug(profile=True):
     import cProfile
     rel()
     if profile:
-        cProfile.run('sym.run()')
+        cProfile.run('sym.run()',sort='cumtime')
     else:
         return run()
 
