@@ -2,7 +2,7 @@ import sys
 sys.path.append(r'.')   # add script path to system pathes to find the other modules
 import bpy, bmesh
 
-from signatures import mksigs
+from signatures import Signatures
 from transformations import Gamma
 from meanshift import cluster
 
@@ -19,7 +19,7 @@ def run(obj=None):
         obj = bpy.context.object # take active object
 
     print('calculating signatures...')
-    sigs = mksigs(obj.data.vertices)
+    sigs = Signatures(obj)
     print('calculated',len(sigs),'signatures')
 
     print('filling the transformation space...')
