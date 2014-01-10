@@ -75,13 +75,14 @@ def cluster(gamma,
             else: # there are no more close points which is strange
                 m = m_old
                 print(step+slssteps,': im lonly')
-            m.normalize()
+            normed = m.normalize()
             m.diff = abs(d(m,m_old)) # just for track record
 
             # tracking the shift
             track.add(m)
-            edge = set(track.bm.verts[j] for j in range(-2,0))
-            track.bm.edges.new(edge)
+            if not normed:
+                edge = set(track.bm.verts[j] for j in range(-2,0))
+                track.bm.edges.new(edge)
 
             if abs(d(m,m_old))<offset_threshold: 
                 #print(step+slssteps,': i converged')
