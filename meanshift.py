@@ -16,6 +16,7 @@ def cluster(gamma,
 
     meanshifts=Gamma(group=gamma.group)
     clusters=Gamma(group=gamma.group)
+    checked=Gamma(group=gamma.group)
     d=gamma.group.d
     #ltrack = Gamma(group=gamma.group) # longest track
     tracks=[] # recording the meanshifts
@@ -42,6 +43,14 @@ def cluster(gamma,
             #        m_old.co,'to',m.co,'to reach the verts')
             #for t in test:
             #    print(t.co,'with weight',t.weight)
+
+        done = False
+        for p in checked:
+            if abs(d(g,p)) < 0.1:
+                done = True
+                break
+        checked.add(g)
+        if done: continue
 
         m = g
         track=Gamma(group=gamma.group)

@@ -96,7 +96,7 @@ class Reflection:
         if self.co.y >= math.pi:
             self.co.y = self.co.y % math.pi
             normed = True
-        if self.co.x < -math.pi/2 or self.co.x > math.pi/2:
+        if self.co.x < 0 or self.co.x > math.pi:
             self.co = (-self).co
             self.calc_r()
             normed = True
