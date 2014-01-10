@@ -99,6 +99,8 @@ def cluster(gamma,
         
     if steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
     
+    meanshifts.sort(key=lambda x: x.weight, reverse=False)
+
     # create clusters
     for m in meanshifts:
         if m.weight > densitythreshold:
