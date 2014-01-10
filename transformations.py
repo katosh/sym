@@ -90,12 +90,18 @@ class Reflection:
 
     def normalize(self):
         """ restriction on one hemisphere """
+        normed = False
         if self.co.x > math.pi or self.co.x <= -math.pi:
             self.co.x = (self.co.x + math.pi) % (2*math.pi) -math.pi
-        self.co.y = self.co.y % math.pi
+            normed = True
+        if self.co.y >= math.pi:
+            self.co.y = self.co.y % math.pi
+            normed = True
         if self.co.x < 0:
             self.co = (-self).co
             self.calc_r()
+            normed = True
+        return normed
 
     def __add__(a, b):
         return Reflection(co=a.co+b.co,

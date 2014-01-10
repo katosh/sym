@@ -22,7 +22,7 @@ def showplane(plane):
             location = base,
             rotation=n.zyx)
 
-def show_best_reflection(clusters=None, scene=bpy.context.scene):
+def show_reflection_planes(clusters=None, scene=bpy.context.scene):
     print('the cluster densities are...')
     for cl in clusters:
         print(cl.density,'at',cl.co)
