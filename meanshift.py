@@ -81,8 +81,8 @@ def cluster(gamma,
         meanshifts.add(m)
 
         # report current progress
-        if verbose and step % verbosestep == 0:
-            print(' process at',"%.1f" % (stepq/len(gamma)*100),'%', end='\r')
+        if progress and step % verbosestep == 0:
+            print(' process at',"%.1f" % (step/len(gamma)*100),'%', end='\r')
 
 
     if steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
