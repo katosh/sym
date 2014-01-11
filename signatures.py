@@ -12,15 +12,13 @@ class Signature:
         self.pc1 = None # TODO: principal curvature 1 (vector)
         self.pc2 = None # TODO: principal curvature 2 (vector)
 
-def mksigs(verts,curvpruning=1.5, percentage=0):
+def mksigs(verts, maxverts=50):
     """ fill the signature space
-        verts: a list of vertices
-        curvpruning: the minimal amount of curvature to pass the pruning step
-        percentage: the relativy amount of vertices pruned randomly (1 will remove all vertices)"""
-    sigs = []
+        verts: a list of vertices"""
+    sigstemp = []
     for vert in verts:
         sig = Signature(vert)
-        if sig.curv > curvpruning and random.random() >= percentage:      # Pruning
-            sigs.append(sig)
-    sigs.sort(key=lambda x: x.curv, reverse=False) # sort by curvature
+        sigstemp.append(sig)
+        sigstemp.sort(key=lambda x: x.curv, reverse=False) # sort by curvature
+        sigs = sigstemp[0:maxverts]
     return sigs
