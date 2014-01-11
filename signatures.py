@@ -2,7 +2,6 @@
 
 import random
 import bmesh
-import sym
 
 class Signature:
     """ holds a point together with its signature """
@@ -15,7 +14,8 @@ def Signatures(obj,curvpruning=1.5,prune_perc=0.5):
         prune_perc: the relativy amount of vertices pruned randomly (1 will remove all vertices)"""
 
     sigs = []
-    bm = sym.get_bmesh(obj)
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
 
     for vert in obj.data.vertices:
         sig = Signature() # create new signature

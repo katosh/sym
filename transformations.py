@@ -228,16 +228,24 @@ class Gamma:
 
     def add(self, tf):
         tf.bmvert = self.bm.verts.new(tf.co)
-        if not hasattr(tf,'index'): tf.index=len(self.elements)
         if not hasattr(tf,'gamma'): tf.gamma=self
         self.elements.append(tf)
 
-    def plot(self,scene,label="Plot"):
+    def plot(self,scene=bpy.context.scene,label="Plot"):
         self.mesh = bpy.data.meshes.new(label)
         self.obj  = bpy.data.objects.new(label, self.mesh)
-        self.bm.verts.index_update()
         self.bm.to_mesh(self.mesh)
         scene.objects.link(self.obj)
+
+    def get_selection(self):
+        self.mesh = bmesh.new()
+        self.mesh.from_mesh(self.obj.data)
+        # have to reassign the new bmeshs verts
+        for (i,tf) in enumerate(self.elements):
+            tf.bmvert = self.mesh.verts[i]
+
+    def set_selection(self):
+        self.bm.to_mesh(self.mesh) # update mesh
 
     def summe(self):
         """ hierarchic sum/linear combination of elements """
