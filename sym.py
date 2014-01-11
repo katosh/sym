@@ -49,19 +49,20 @@ def createsuzanne():
     bpy.context.scene.objects.link(ob_new)
     return ob_new
     
-def test(p=False, tobj=None):
+def test(p=False, tobj=None, mkobj=False):
     import imp, cProfile, sym, signatures, transformations, meanshift
-    for i in range(2):
-        imp.reload(imp)
-        imp.reload(sym)
-        imp.reload(signatures)
-        imp.reload(transformations)
-        imp.reload(meanshift)
+    imp.reload(imp)
+    imp.reload(sym)
+    imp.reload(signatures)
+    imp.reload(transformations)
+    imp.reload(meanshift)
         
-    if p:
+    if p and mkobj:
         cProfile.run('run(createsuzanne())')
+    elif p:
+        cProfile.run('run()')
     else:
         sym.run(obj=tobj)
 
 if __name__ == "__main__":
-    test(p=True, tobj=createsuzanne())
+    test(p=True, mkobj=False)
