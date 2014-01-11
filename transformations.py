@@ -211,8 +211,10 @@ class Gamma:
         self.group=group
         self.bm   = bmesh.new()
         self.elements=[]
-        if signatures: self.compute(signatures)
-
+        """ size of the space e.g. max offset difference """
+        self.dimensions = []
+        if signatures: self.compute(signatures) 
+    
     def __getitem__(self, arg): # allows accessing the elements directly via []
         return self.elements[arg]
 
@@ -258,16 +260,28 @@ class Gamma:
             return result[0]
         else:
             return self.group.id()
-
-    def compute(self,sigs,plimit=0.1):
+    
+    def compute(self, sigs, maxtransformations = 1000):
         """ fills the transformation space
         with all the transformations (pairing)"""
+        class pair:
+            def __init__(self):
+                self.a = None
+                self.b = None
+                self.similarity = 0
+
+        pairs = []
         for i in range(0,len(sigs)):
-            # pairing with the followers in the array sorted by curvatures for pruning!
             for j in range(i+1,len(sigs)):
-                # skip following signatures, if the curvature differ too much
-                if (abs(1 - (sigs[j].curv / sigs[i].curv))) > plimit:
-                    break
-                # would like to eliminate double entries in signature space before!
-                if (sigs[i].vert.co!=sigs[j].vert.co):
-                    self.add(self.group(signature1=sigs[i], signature2=sigs[j]))
+                p = pair()
+                p.a = sigs[j]
+                p.b = sigs[i]
+                p.similarity = abs(1 - (sigs[j].curv / sigs[i].curv))
+                pairs.append(p)
+        """ sorting the pairs by similarity """
+        pairs.sort(key=lambda x: x.similarity, reverse=False)
+        """ adding maxtransformation many to the space """
+        for i in range(min(maxtransformations, len(pairs))):
+            if (pairs[i].a.vert.co != pairs[j].b.vert.co):
+                self.add(self.group(signature1=pairs[i].a,
+                        signature2=pairs[i].b))

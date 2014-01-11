@@ -68,11 +68,23 @@ def createsuzanne():
     bpy.context.scene.objects.link(ob_new)
     return ob_new
     
-def test(p=False, tobj=None):
+def test(p=False, tobj=None, mkobj=False):
     import imp, cProfile, sym, signatures, transformations, meanshift
+<<<<<<< HEAD
     rel()
     if p:
+=======
+    imp.reload(imp)
+    imp.reload(sym)
+    imp.reload(signatures)
+    imp.reload(transformations)
+    imp.reload(meanshift)
+        
+    if p and mkobj:
+>>>>>>> Dominik
         cProfile.run('run(createsuzanne())')
+    elif p:
+        cProfile.run('run()')
     else:
         return run(**args)
 
@@ -121,5 +133,10 @@ def get_bmesh(obj,edit=False):
         bm.from_mesh(obj.data)
         return bm
 
+<<<<<<< HEAD
 if __name__ == "__main__": # when started from console, directly run
     test(p=True)
+=======
+if __name__ == "__main__":
+    test(p=True, mkobj=False)
+>>>>>>> Dominik
