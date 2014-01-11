@@ -22,10 +22,10 @@ def cluster(gamma,
     track=Gamma(group=gamma.group)
     d=gamma.group.d
 
-    # compute meanshift
     steplimit=0
-
     verbosestep = math.ceil(len(gamma)/1000) # steps before showing percentage
+
+    # COMPUTE MEANSHIFT
 
     for step, g in enumerate(gamma): # starting point
 
@@ -47,10 +47,7 @@ def cluster(gamma,
         for i in range(steps): # maximal count of shift steps to guarantee termination
             weight = 0
             m_old  = m
-            # m = gamma.group.id()
             summe = Gamma(group=gamma.group)
-            weights = []
-            test = Gamma(group=gamma.group)
 
             for x in gamma:
                 dist = d(x, m_old)
@@ -58,31 +55,24 @@ def cluster(gamma,
                     kx = k(abs(dist), bandwidth)
                     x.weight=kx
                     if dist >= 0:
-                        test.add(x)
                         summe.add(x*kx)
                     else: # just for projective Space
-                        temp = -x
-                        temp.weight = -x.weight
-                        test.add(temp)
-                        summe.add(temp*kx)
-                    weights.append(kx)
-            weight = sum(weights)
+                        summe.add((-x)*kx)
+                    weight += kx
             if weight != 0:
                 m = summe.summe()*(1/weight)
                 checked.add(m)
             else: # there are no more close points which is strange
-                m = m_old
                 print(step,': im lonly')
             normed = m.normalize()
 
-            # tracking the shift
             track.add(m)
 
             if not normed:
                 edge = set(track.bm.verts[j] for j in range(-2,0))
                 track.bm.edges.new(edge)
 
-            if abs(d(m,m_old))<offset_threshold:
+            if abs(d(m,m_old)) < offset_threshold:
                 break
         if (i==steps-1):
             steplimit+=1
@@ -99,7 +89,8 @@ def cluster(gamma,
 
     meanshifts.sort(key=lambda x: x.weight, reverse=False)
 
-    # create clusters
+    # COMPUTE CLUSTERS
+
     for m in meanshifts:
         if m.weight > densitythreshold:
             found=False
@@ -111,9 +102,7 @@ def cluster(gamma,
                     break
             if not found:
                 m.clusterverts=Gamma()
-                m.density = m.weight
                 m.clusterverts.add(m.origin)
                 clusters.add(m)
-    # plot the debugging track
-    track.plot(bpy.context.scene,label="track")
-    return clusters
+
+    return clusters, track

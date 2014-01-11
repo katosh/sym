@@ -26,9 +26,10 @@ def run(obj=None, **args):
 
 
     print('clustering...')
-    clusters = cluster(gamma)
+    clusters, track = cluster(gamma)
     print('found',len(clusters),'clusters')
     clusters.plot(scene,label="clusters")
+    track.plot(bpy.context.scene,label="track")
 
     show_reflection_planes(clusters=clusters,scene=scene)
 
