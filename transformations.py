@@ -261,7 +261,7 @@ class Gamma:
         else:
             return self.group.id()
     
-    def compute(self, sigs, maxtransformations = 1000):
+    def compute(self, sigs, maxtransformations = 500):
         """ fills the transformation space
         with all the transformations (pairing)"""
         class pair:
