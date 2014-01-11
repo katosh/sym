@@ -11,9 +11,6 @@ import transformations
 lastclusters = None
 lastgamma = None
 
-if __name__ == "__main__": # when started from console, directly run
-    debug()
-
 def run(obj=None, **args):
     """ runs symmetry detection on the obj
     active object is taken if none is given"""
@@ -45,7 +42,7 @@ def run(obj=None, **args):
     lastgamma=gamma
     return sigs,gamma,clusters
 
-def debug(profile=True,prune_perc=0.5, **args):
+def debug(profile=True,prune_perc=0.7, **args):
     """ reload modules, invoke profiler """
     rel()
     if profile:
@@ -69,3 +66,5 @@ def rel():
     imp.reload(signatures)
     imp.reload(transformations)
     imp.reload(meanshift)
+    
+debug()
