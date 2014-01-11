@@ -8,7 +8,7 @@ class Signature:
     """ holds a point together with its signature """
     pass
 
-def Signatures(obj,curvpruning=1.5,prune_perc=0.5):
+def Signatures(obj,curvpruning=1.5,prune_perc=0):
     """ fill the signature space
         obj: the object to create the signatures of
         curvpruning: the minimal amount of curvature to pass the pruning step

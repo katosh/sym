@@ -61,13 +61,14 @@ class Reflection:
             self.roff)) #offset
 
     def draw(self, scene=bpy.context.scene):
+        """ draws the reflection plane in the scene """
         base = self.rnor * self.roff
-        rme = bpy.data.meshes.new('rNormal')
-        normalverts = [base, base + self.rnor]
-        normaledge = [[0, 1]]
-        rme.from_pydata(normalverts,normaledge,[])
-        ob_normal = bpy.data.objects.new("rNormal", rme)
-        scene.objects.link(ob_normal)
+        #rme = bpy.data.meshes.new('rNormal')
+        #normalverts = [base, base + self.rnor]
+        #normaledge = [[0, 1]]
+        #rme.from_pydata(normalverts,normaledge,[])
+        #ob_normal = bpy.data.objects.new("rNormal", rme)
+        #scene.objects.link(ob_normal)
         n = Vector() # self rotation in (phi,theta,0)
         n.xyz = (self.co.x,
             self.co.y,
@@ -92,12 +93,12 @@ class Reflection:
         """ restriction on one hemisphere """
         normed = False
         if self.co.x > math.pi or self.co.x <= -math.pi:
-            self.co.x = (self.co.x + math.pi) % (2*math.pi) -math.pi
+            self.co.x = (self.co.x + math.pi  % (2*math.pi)) - math.pi
             normed = True
         if self.co.y >= math.pi:
             self.co.y = self.co.y % math.pi
             normed = True
-        if self.co.x < 0:
+        if self.co.x < -math.pi/2 or self.co.x >= math.pi/2:
             self.co = (-self).co
             self.calc_r()
             normed = True
@@ -114,7 +115,7 @@ class Reflection:
     def __neg__(self):
         """ return antipodal point """
         coo=Vector()
-        if self.co.x > math.pi/2:
+        if self.co.x > 0:
             coo.x = self.co.x -  math.pi
         else:
             coo.x = self.co.x + math.pi
@@ -152,10 +153,8 @@ class Reflection:
         """ metric, if negative ->
             on oposing hemispheres of sphere,
             distance is then calculated to the antipodal point"""
-        if t1.rnor is None:
+        if t1.rnor is None or t2.rnor is None:
             t1.calc_r()
-        if t2.rnor is None:
-            t2.calc_r()
         if t1.co == t2.co:
             return 0
         else:
@@ -226,6 +225,9 @@ class Gamma:
     def __iter__(self):
         return iter(self.elements)
 
+    def sort(self,**kwargs):
+        self.elements.sort(**kwargs)
+        
     def add(self, tf):
         tf.bmvert = self.bm.verts.new(tf.co)
         if not hasattr(tf,'index'): tf.index=len(self.elements)

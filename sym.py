@@ -2,15 +2,11 @@ import sys
 sys.path.append(r'.')   # add script path to system pathes to find the other modules
 import bpy, bmesh
 
-from signatures import Signatures
+import signatures as sign
 from transformations import Gamma
 from meanshift import cluster
 from verification import show_reflection_planes
-
 import transformations
-
-if __name__ == "__main__": # when started from console, directly run
-    debug()
 
 def run(obj=None, **args):
     """ runs symmetry detection on the obj
@@ -20,7 +16,7 @@ def run(obj=None, **args):
         obj = bpy.context.object # take active object
 
     print('calculating signatures...')
-    sigs = Signatures(obj,**args)
+    sigs = sign.Signatures(obj,**args)
     print('calculated',len(sigs),'signatures')
 
     print('filling the transformation space...')
@@ -57,6 +53,26 @@ def debug(profile=True,prune_perc=0.5, **args):
         ps.sort_stats('cumulative')
         ps.print_stats(10)
         print(s.getvalue())
+
+def createsuzanne():
+    import bmesh
+    bm=bmesh.new()
+    bpy.ops.object.delete()            # deleting the stupid cube
+    bpy.ops.mesh.primitive_monkey_add()
+    bpy.ops.object.delete()
+    bm.from_mesh(bpy.data.meshes["Suzanne"]) # get mesh data from model
+    mesh = bpy.data.meshes.new("Suzanne")
+    bm.to_mesh(mesh)
+    ob_new = bpy.data.objects.new("Suzanne", mesh)
+    ob_new.hide = True
+    bpy.context.scene.objects.link(ob_new)
+    return ob_new
+    
+def test(p=False, tobj=None):
+    import imp, cProfile, sym, signatures, transformations, meanshift
+    rel()
+    if p:
+        cProfile.run('run(createsuzanne())')
     else:
         return run(**args)
 
@@ -104,3 +120,6 @@ def get_bmesh(obj,edit=False):
         bm = bmesh.new()
         bm.from_mesh(obj.data)
         return bm
+
+if __name__ == "__main__": # when started from console, directly run
+    test(p=True)

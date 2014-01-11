@@ -12,13 +12,14 @@ def cluster(gamma,
         bandwidth=0.3,
         densitythreshold=5,
         offset_threshold=0.0001,
-        cluster_resolution=0.01):
+        cluster_resolution=0.01,
+        grid_size=0.1):
 
     meanshifts=Gamma(group=gamma.group)
     clusters=Gamma(group=gamma.group)
+    checked=Gamma(group=gamma.group)
+    track=Gamma(group=gamma.group)
     d=gamma.group.d
-    #ltrack = Gamma(group=gamma.group) # longest track
-    tracks=[] # recording the meanshifts
 
     # compute meanshift
     steplimit=0
@@ -43,8 +44,15 @@ def cluster(gamma,
             #for t in test:
             #    print(t.co,'with weight',t.weight)
 
+        done = False
+        for p in checked:
+            if abs(d(g,p)) < grid_size:
+                done = True
+                break
+        checked.add(g)
+        if done: continue
+
         m = g
-        track=Gamma(group=gamma.group)
         track.add(m)
         for i in range(steps): # maximal count of shift steps to guarantee termination
             weight = 0
@@ -59,24 +67,23 @@ def cluster(gamma,
                 if abs(dist) < bandwidth:
                     kx = k(abs(dist), bandwidth)
                     x.weight=kx
-                    if dist<0:
+                    if dist >= 0:
+                        test.add(x)
+                        summe.add(x*kx)
+                    else: # just for projective Space
                         temp = -x
                         temp.weight = -x.weight
                         test.add(temp)
                         summe.add(temp*kx)
-                    else:
-                        test.add(x)
-                        summe.add(x*kx)
                     weights.append(kx)
-                    #print ("old",m_old.co,"influenced by",x.co,"with dist",dist, "and weight",k(dist,bandwidth),"to",(m*(1/(weight))).co)
             weight = sum(weights)
             if weight != 0:
                 m = summe.summe()*(1/weight)
+                checked.add(m)
             else: # there are no more close points which is strange
                 m = m_old
                 print(step+slssteps,': im lonly')
             normed = m.normalize()
-            m.diff = abs(d(m,m_old)) # just for track record
 
             # tracking the shift
             track.add(m)
@@ -85,20 +92,17 @@ def cluster(gamma,
                 edge = set(track.bm.verts[j] for j in range(-2,0))
                 track.bm.edges.new(edge)
 
-            if abs(d(m,m_old))<offset_threshold:
-
-                #print(step+slssteps,': i converged')
+            if abs(d(m,m_old))<offset_threshold: 
                 break
         if (i==steps-1):
             steplimit+=1
         m.origin = g
         m.weight = weight
-        tracks.append(track)
         meanshifts.add(m)
 
     if steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
 
-    # todo: sort meanshifts by weights...
+    meanshifts.sort(key=lambda x: x.weight, reverse=False)
 
     # create clusters
     for m in meanshifts:
@@ -111,14 +115,10 @@ def cluster(gamma,
                     c.clusterverts.add(m.origin)
                     break
             if not found:
-                #print ("creating cluster at","m")
                 m.clusterverts=Gamma()
                 m.density = m.weight
                 m.clusterverts.add(m.origin)
                 clusters.add(m)
     # plot the debugging track
-    i=0
-    for track in tracks:
-        track.plot(bpy.context.scene,label="track"+str(i))
-        i += 1
+    track.plot(bpy.context.scene,label="track")
     return clusters
