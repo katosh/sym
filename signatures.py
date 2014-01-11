@@ -1,12 +1,8 @@
 """ filling the signature space """
 
-<<<<<<< HEAD
-import random
 import bmesh
 import sym
-=======
 import math
->>>>>>> Dominik
 
 class Signature:
     """ holds a point together with its signature """
@@ -18,6 +14,7 @@ def Signatures(obj, maxverts=50):
         curvpruning: the minimal amount of curvature to pass the pruning step
         prune_perc: the relativy amount of vertices pruned randomly (1 will remove all vertices)"""
 
+    verts = obj.data.vertices
 
     """ to show the status of the process """
     steps = len(verts) # number of steps
@@ -27,7 +24,7 @@ def Signatures(obj, maxverts=50):
 
     sigstemp = []
     bm = sym.get_bmesh(obj)
-    for vert in obj.data.vertices:
+    for vert in verts:
         sig = Signature()
         sig.vert = vert
         sig.curv = bm.verts[vert.index].calc_shell_factor()
