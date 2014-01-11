@@ -1,4 +1,4 @@
-from __future__ import print_function # overwriting proces status line
+from __future__ import print_function # overwriting progress status line
 from mathutils import Vector
 from transformations import Gamma
 import math
@@ -13,7 +13,8 @@ def cluster(gamma,
         densitythreshold=5,
         offset_threshold=0.0001,
         cluster_resolution=0.01,
-        grid_size=0.1):
+        grid_size=0.1,
+        progress=True):
 
     meanshifts=Gamma(group=gamma.group)
     clusters=Gamma(group=gamma.group)
@@ -24,20 +25,9 @@ def cluster(gamma,
     # compute meanshift
     steplimit=0
 
-    # show process parameters
-    stepss = len(gamma) # number of steps
-    step = 0 # current step
-    waitsteps = math.ceil(stepss/1000) # steps befor showing percentage
-    slssteps = 0 # steps since last showing of percentage
+    verbosestep = math.ceil(len(gamma)/1000) # steps before showing percentage
 
-    for g in gamma: # starting point
-
-        # show process
-        slssteps += 1
-        if slssteps > waitsteps:
-            step += slssteps
-            print(' process at',math.floor(1000*step/stepss)/10,'%', end='\r')
-            slssteps = 0
+    for step, g in enumerate(gamma): # starting point
 
             #print('i jumped',d(m_old,m),'from',
             #        m_old.co,'to',m.co,'to reach the verts')
@@ -82,7 +72,7 @@ def cluster(gamma,
                 checked.add(m)
             else: # there are no more close points which is strange
                 m = m_old
-                print(step+slssteps,': im lonly')
+                print(step,': im lonly')
             normed = m.normalize()
 
             # tracking the shift
@@ -92,13 +82,18 @@ def cluster(gamma,
                 edge = set(track.bm.verts[j] for j in range(-2,0))
                 track.bm.edges.new(edge)
 
-            if abs(d(m,m_old))<offset_threshold: 
+            if abs(d(m,m_old))<offset_threshold:
                 break
         if (i==steps-1):
             steplimit+=1
         m.origin = g
         m.weight = weight
         meanshifts.add(m)
+
+        # report current progress
+        if verbose and step % verbosestep == 0:
+            print(' process at',"%.1f" % (stepq/len(gamma)*100),'%', end='\r')
+
 
     if steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
 
