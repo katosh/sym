@@ -4,7 +4,8 @@ from transformations import Gamma
 import math
 import bpy
 import bmesh
-import threading
+import time
+from multiprocessing import Process, Lock, Pipe
 
 class Meanshift:
 
@@ -26,56 +27,88 @@ class Meanshift:
         self.grid_size = grid_size
         self.gamma = gamma
         self.meanshifts = Gamma(group=gamma.group)
-        self.checked = Gamma(group=gamma.group)
         self.track = bmesh.new()
 
-    def k(self, delta,bandwidth):
-        return (bandwidth-delta)/bandwidth #hütchenfunktion als kernel
-        
     def cluster(self):
         
         gamma = self.gamma
 
-        """ split gamma in n parts for n threads """
-        n = 4 # number of threads
+        """ split gamma in n parts for n procesess
+        and select for fairly distant once"""
+        n = 4 # number of procesess
+        checked = Gamma(group=gamma.group)
         gammas = []
+        d=gamma.group.d
         for i in range(n):
             gammas.append(Gamma(group=gamma.group))
         i=-1
         for g in gamma:
-            i = (i+1) % n
-            gammas[i].add(g)
+            too_close = False
+            for c in checked:
+                if abs(d(c,g)) < self.grid_size:
+                    too_close = True
+                    break
+            if not to_close:
+                i = (i+1) % n
+                gammas[i].add(g)
+                checked.add(g)
 
-        """ run the mean shift threads """
-        stepss = len(gamma) # number of steps
+        """ make the pipes and run the mean shift processes """
+        stepss = len(checked) # number of steps
+        lock = Lock()
+        processes = []
+        pipes = []
+        slssteps, statuspipe_child = Pipe()# steps since last showing of percentage
+        for gam in gammas:
+            parent_conn, child_conn = Pipe()
+            process = Process(target=ShiftingProcess.meanshift, args=(
+                    [gamma],
+                    [gam],
+                    self.bandwidth,
+                    self.offset_threshold,
+                    self.steps,
+                    sstatuspipe_chilid,
+                    lock,
+                    child_conn))
+            processes.append(process)
+            pipes.append(parent_conn)
+            process.start()
+
+        """ overhead of processes """
         step = 0 # current step
         waitsteps = math.ceil(stepss/1000) # steps befor showing percentage
-        self.slssteps = 0 # steps since last showing of percentage
-        self.lock = threading.Lock()
-        threads = []
-        for gam in gammas:
-           thread = threading.Thread(target=self.meanshift, args=([gam]))
-           threads.append(thread)
-           thread.start()
-
-        """ overhead of threads """
         while True:
-            if self.slssteps > waitsteps:
-                self.lock.acquire()
-                step += self.slssteps
+            time.sleep(1)
+            if slssteps.recv() > waitsteps:
+                lock.acquire()
+                step += slssteps.recv()
                 print(' process at',math.floor(1000*step/stepss)/10,
                         '%', end='\r')
-                self.slssteps = 0
-                self.lock.release()
+                slssteps.send(0)
+                lock.release()
             done = True
-            for thread in threads:
-                if thread.is_alive(): 
+            for process in processes:
+                if process.is_alive(): 
                     done = False
                     break
             if done:
                 break
+        self.track = None
+        for pipe in pipes:
+            ms, steplim, tr = pipe.recv()
+            for m in ms:
+                self.meanshift.add(m)
+            self.steplimit += steplim
+            for t in tr:
+                mesh = bpy.data.meshes.new("track")
+                t.to_mesh(mesh)
+                obj = bpy.data.objects.new("tracks", mesh)
+                if self.track is None:
+                    self.track = obj
+                else:
+                    self.track.join(obj)
 
-        if self.steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
+        if steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
         
         self.meanshifts.sort(key=lambda x: x.weight, reverse=False)
 
@@ -98,38 +131,51 @@ class Meanshift:
                     clusters.add(m)
         return clusters
 
-    def meanshift(self, gamma):
+
+    def plot_tracks(self, track=None, scene=bpy.context.scene):
+        """ plot the debugging tracks """
+        if track is None:
+            track = slef.track
+        mesh = bpy.data.meshes.new("tracks")
+        obj  = bpy.data.objects.new("tracks", mesh)
+        track.to_mesh(mesh)
+        scene.objects.link(obj)
+
+class ShiftingProcess:
+
+    @staticmethod
+    def k(delta,bandwidth):
+        return (bandwidth-delta)/bandwidth #hütchenfunktion als kernel
+    
+   @staticmethod 
+    def meanshift(
+            gamma_whole,
+            gamma,
+            bandwidth,
+            offset_threshold,
+            steps,
+            slssteps,
+            lock,
+            my_output):
+
+        track = bmesh.new()
+        steplimit = 0
+        meanshift = Gamma(group=gamma.group)
+
         for g in gamma: # starting point
-
-            # show process
-            self.lock.acquire()
-            self.slssteps += 1
-            self.lock.release()
-
             d=gamma.group.d
-
-            done = False
-            self.lock.acquire()
-            for p in self.checked:
-                if abs(d(g,p)) < self.grid_size:
-                    done = True
-                    break
-            self.checked.add(g)
-            trackvert = self.track.verts.new(g.co)
-            self.lock.release()
-            if done: continue
             m = g
-            for i in range(self.steps): # maximal count of shift steps to guarantee termination
+            for i in range(steps): # maximal count of shift steps to guarantee termination
                 weight = 0
                 m_old  = m
-                # m = gamma.group.id()
                 summe = Gamma(group=gamma.group)
                 weights = []
+                trackvert = track.verts.new(m.co) # tracking the shift
 
-                for x in self.gamma:
+                for x in gamma_whole:
                     dist = d(x, m_old)                
-                    if abs(dist) < self.bandwidth:
-                        kx = self.k(abs(dist), self.bandwidth)
+                    if abs(dist) < bandwidth:
+                        kx = ShiftingProcess.k(abs(dist), bandwidth)
                         x.weight=kx
                         if dist >= 0:
                             summe.add(x*kx)
@@ -142,36 +188,26 @@ class Meanshift:
                 if weight != 0:
                     m = summe.summe()*(1/weight)
                     normed = m.normalize()
-                    self.lock.acquire()
-                    self.checked.add(m)
                     # tracking the shift
                     trackvert_old = trackvert
-                    trackvert = self.track.verts.new(m.co)
+                    trackvert = track.verts.new(m.co)
                     if not normed:
                         edge = [trackvert_old, trackvert]
-                        self.track.edges.new(edge)
-                    self.lock.release()
+                        track.edges.new(edge)
                 else: # there are no more close points which is strange
                     m = m_old
                     print(step+slssteps,': im lonly')
 
-                if abs(d(m,m_old))<self.offset_threshold: 
+                if abs(d(m,m_old))<offset_threshold: 
                     break
-            if (i==self.steps-1):
-                self.lock.acquire()
-                self.steplimit+=1
-                self.lock.release()
+            if (i==steps-1):
+                steplimit+=1
             m.origin = g
             m.weight = weight
-            self.lock.acquire()
-            self.meanshifts.add(m)
-            self.lock.release()
-
-    def plot_tracks(self, track=None, scene=bpy.context.scene):
-        """ plot the debugging tracks """
-        if track is None:
-            track = self.track
-        mesh = bpy.data.meshes.new("tracks")
-        obj  = bpy.data.objects.new("tracks", mesh)
-        track.to_mesh(mesh)
-        scene.objects.link(obj)
+            meanshifts.add(m)
+            
+            # show process
+            lock.acquire()
+            slssteps.send(slssteps.recv() + 1)
+            lock.release()
+        my_output.send(meanshift, steplimit, track)
