@@ -81,7 +81,7 @@ def cluster(gamma,
             # tracking the shift
             track.add(m)
 
-            if not normed:
+            if False and not normed:
                 edge = set(track.bm.verts[j] for j in range(-2,0))
                 track.bm.edges.new(edge)
 

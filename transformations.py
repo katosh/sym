@@ -227,8 +227,10 @@ class Gamma:
         return iter(self.elements)
 
     def add(self, tf):
-        tf.bmvert = self.bm.verts.new(tf.co)
-        if not hasattr(tf,'gamma'): tf.gamma=self
+        newvert = self.bm.verts.new(tf.co)
+        # store the first mesh occurence inside transformation
+        if not hasattr(tf,'bmvert'): tf.bmvert = newvert
+        if not hasattr(tf,'gamma'): tf.gamma = self
         self.elements.append(tf)
 
     def plot(self,scene=bpy.context.scene,label="Plot"):
