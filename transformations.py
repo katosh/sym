@@ -258,21 +258,3 @@ class SpacePlot:
 
     def vertex(self, elem):
         return self.vertex_dict[id(elem)]
-
-def hier_sum(self):
-    """ hierarchic sum/linear combination of tfs """
-    length=len(self)
-    result = self
-    temp = None
-    while length > 1:
-        temp = []
-        for i in range(math.floor(length/2)):
-            temp.add(result[2*i] + result[2*i+1])
-        if length % 2 == 1:
-            temp[0] = temp[0] + result[length-1]
-        result = temp
-        length = len(result)
-    if result:
-        return result[0]
-    else:
-        return self.group.id()
