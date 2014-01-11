@@ -9,11 +9,11 @@ def k(delta,bandwidth):
     
 def cluster(gamma,
         steps=100,
-        bandwidth=0.2,
-        densitythreshold=0,
+        bandwidth=0.3,
+        densitythreshold=5,
         offset_threshold=0.0001,
         cluster_resolution=0.01,
-        grid_size=0.05):
+        grid_size=0.1):
 
     meanshifts=Gamma(group=gamma.group)
     clusters=Gamma(group=gamma.group)
@@ -79,6 +79,7 @@ def cluster(gamma,
             weight = sum(weights)
             if weight != 0:
                 m = summe.summe()*(1/weight)
+                checked.add(m)
             else: # there are no more close points which is strange
                 m = m_old
                 print(step+slssteps,': im lonly')

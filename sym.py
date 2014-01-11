@@ -33,7 +33,7 @@ def run(obj=None):
     print('found',len(clusters),'clusters')
     clusters.plot(scene,label="clusters")
 
-    show_reflection_planes(clusters=clusters,scene=scene)
+    #show_best_refelction(clusters=clusters,scene=scene)
 
 def createsuzanne():
     import bmesh
