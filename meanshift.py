@@ -53,8 +53,11 @@ def cluster(gamma,
         if done: continue
 
         m = g
+        i=-1
         track.add(m)
-        for i in range(steps): # maximal count of shift steps to guarantee termination
+        #for i in range(steps): # maximal count of shift steps to guarantee termination
+        while True:
+            i+=1
             weight = 0
             m_old  = m
             # m = gamma.group.id()

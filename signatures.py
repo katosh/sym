@@ -12,7 +12,7 @@ class Signature:
         self.pc1 = None # TODO: principal curvature 1 (vector)
         self.pc2 = None # TODO: principal curvature 2 (vector)
 
-def mksigs(verts,curvpruning=1, percentage=0):
+def mksigs(verts,curvpruning=1.5, percentage=0):
     """ fill the signature space
         verts: a list of vertices
         curvpruning: the minimal amount of curvature to pass the pruning step
