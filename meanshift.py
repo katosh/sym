@@ -79,6 +79,7 @@ def cluster(gamma,
             weight = sum(weights)
             if weight != 0:
                 m = summe.summe()*(1/weight)
+                checked.add(m)
             else: # there are no more close points which is strange
                 m = m_old
                 print(step+slssteps,': im lonly')
