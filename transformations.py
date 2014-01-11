@@ -184,6 +184,8 @@ class Gamma:
         self.group=group
         self.bm   = bmesh.new()
         self.elements=[]
+        """ size of the space e.g. max offset difference """
+        self.dimensions = []
         if signatures: self.compute(signatures) 
     
     def __getitem__(self, arg): # allows accessing the elements directly via []
@@ -229,7 +231,7 @@ class Gamma:
         else:
             return self.group.id()
         
-    def compute(self,sigs,plimit=0.1):
+    def compute(self, sigs, plimit=0.1):
         """ fills the transformation space
         with all the transformations (pairing)"""
         for i in range(0,len(sigs)):
