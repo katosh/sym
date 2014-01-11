@@ -67,12 +67,21 @@ def createsuzanne():
     ob_new.hide = True
     bpy.context.scene.objects.link(ob_new)
     return ob_new
-    
-def test(p=False, tobj=None):
-    import imp, cProfile, sym, signatures, transformations, meanshift
+
+def debug(profile=True, **args):
+    """ reload modules, invoke profiler """
     rel()
-    if p:
-        cProfile.run('run(createsuzanne())')
+    if profile:
+        import cProfile, pstats, io
+        pr = cProfile.Profile()
+        pr.enable()
+        run(**args)
+        pr.disable()
+        s = io.StringIO()
+        ps = pstats.Stats(pr, stream=s).strip_dirs()
+        ps.sort_stats('cumulative')
+        ps.print_stats(10)
+        print(s.getvalue())
     else:
         return run(**args)
 
@@ -121,5 +130,8 @@ def get_bmesh(obj,edit=False):
         bm.from_mesh(obj.data)
         return bm
 
+# autostart
 if __name__ == "__main__": # when started from console, directly run
-    test(p=True)
+    debug() # dominiks framework
+else:
+    debug() # alex framework
