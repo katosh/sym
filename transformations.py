@@ -58,13 +58,14 @@ class Reflection:
                 
 
     def draw(self, scene=bpy.context.scene):
+        """ draws the reflection plane in the scene """
         base = self.rnor * self.roff
-        rme = bpy.data.meshes.new('rNormal')
-        normalverts = [base, base + self.rnor]
-        normaledge = [[0, 1]]
-        rme.from_pydata(normalverts,normaledge,[])
-        ob_normal = bpy.data.objects.new("rNormal", rme)
-        scene.objects.link(ob_normal)
+        #rme = bpy.data.meshes.new('rNormal')
+        #normalverts = [base, base + self.rnor]
+        #normaledge = [[0, 1]]
+        #rme.from_pydata(normalverts,normaledge,[])
+        #ob_normal = bpy.data.objects.new("rNormal", rme)
+        #scene.objects.link(ob_normal)
         n = Vector() # self rotation in (phi,theta,0)
         n.xyz = (self.co.x,
             self.co.y,
