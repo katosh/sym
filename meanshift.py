@@ -48,7 +48,7 @@ class Meanshift:
                 if abs(d(c,g)) < self.grid_size:
                     too_close = True
                     break
-            if not to_close:
+            if not too_close:
                 i = (i+1) % n
                 gammas[i].add(g)
                 checked.add(g)
@@ -62,12 +62,12 @@ class Meanshift:
         for gam in gammas:
             parent_conn, child_conn = Pipe()
             process = Process(target=ShiftingProcess.meanshift, args=(
-                    [gamma],
-                    [gam],
+                    gamma,
+                    gam,
                     self.bandwidth,
                     self.offset_threshold,
                     self.steps,
-                    sstatuspipe_chilid,
+                    statuspipe_child,
                     lock,
                     child_conn))
             processes.append(process)
@@ -79,13 +79,13 @@ class Meanshift:
         waitsteps = math.ceil(stepss/1000) # steps befor showing percentage
         while True:
             time.sleep(1)
-            if slssteps.recv() > waitsteps:
-                lock.acquire()
-                step += slssteps.recv()
-                print(' process at',math.floor(1000*step/stepss)/10,
-                        '%', end='\r')
-                slssteps.send(0)
-                lock.release()
+            #if slssteps.recv()[0] > waitsteps:
+            #    lock.acquire()
+            #    step += slssteps.recv()[0]
+            #    print(' process at',math.floor(1000*step/stepss)/10,
+            #            '%', end='\r')
+            #    slssteps.send([0])[0]
+            #    lock.release()
             done = True
             for process in processes:
                 if process.is_alive(): 
@@ -93,9 +93,11 @@ class Meanshift:
                     break
             if done:
                 break
+
+        """ collection the results of the procesess """
         self.track = None
         for pipe in pipes:
-            ms, steplim, tr = pipe.recv()
+            [ms, steplim, tr] = pipe.recv()
             for m in ms:
                 self.meanshift.add(m)
             self.steplimit += steplim
@@ -108,7 +110,8 @@ class Meanshift:
                 else:
                     self.track.join(obj)
 
-        if steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
+        if self.steplimit > 0: print ("reached mean shift step limit",
+                self.steplimit," times. consider increasing steps")
         
         self.meanshifts.sort(key=lambda x: x.weight, reverse=False)
 
@@ -147,7 +150,7 @@ class ShiftingProcess:
     def k(delta,bandwidth):
         return (bandwidth-delta)/bandwidth #hütchenfunktion als kernel
     
-   @staticmethod 
+    @staticmethod 
     def meanshift(
             gamma_whole,
             gamma,
@@ -204,10 +207,10 @@ class ShiftingProcess:
                 steplimit+=1
             m.origin = g
             m.weight = weight
-            meanshifts.add(m)
+            meanshift.add(m)
             
             # show process
-            lock.acquire()
-            slssteps.send(slssteps.recv() + 1)
-            lock.release()
-        my_output.send(meanshift, steplimit, track)
+            #lock.acquire()
+            #slssteps.send([slssteps.recv()[0] + 1])
+            #lock.release()
+        my_output.send([meanshift, steplimit, track])
