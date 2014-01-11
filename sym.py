@@ -4,7 +4,7 @@ import bpy, bmesh
 
 from signatures import mksigs
 from transformations import Gamma
-from meanshift import cluster
+from meanshift import Meanshift
 from verification import show_reflection_planes
 
 def run(obj=None):
@@ -29,9 +29,12 @@ def run(obj=None):
     
 
     print('clustering...')
-    clusters=cluster(gamma)
+    shift=Meanshift(gamma)
+    clusters=shift.cluster()
     print('found',len(clusters),'clusters')
     clusters.plot(scene,label="clusters")
+    """ plot the shifting tracks """
+    shift.plot_tracks(scene=scene)
 
     #show_best_refelction(clusters=clusters,scene=scene)
 

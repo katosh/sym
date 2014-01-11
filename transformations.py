@@ -201,7 +201,8 @@ class Gamma:
         self.elements.sort(**kwargs)
         
     def add(self, tf):
-        tf.bmvert = self.bm.verts.new(tf.co)
+        if not hasattr(tf, 'bmvert'):
+            tf.bmvert = self.bm.verts.new(tf.co)
         self.elements.append(tf)        
     
     def plot(self,scene,label="Plot"):
