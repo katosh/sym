@@ -204,78 +204,75 @@ class Translation:
     def d(t1, t2):
         return (t1.co-t2.co).length
 
-class Gamma:
-    """ collection of transformations also containing
-    the representing blender object """
+def computeTransformations(sigs,group=Reflection,prune_curv=0.1):
+    transformations=[]
+    for i, sig1 in enumerate(sigs):
+        for sig2 in sigs[i+1:]:
+            # skip following signatures, if the curvature differ too much
+            # if curvatures differ to much skip rest
+            # requires the sigs to be sorted by curv
+            if (abs(1 - (sig2.curv / sig1.curv))) > prune_curv:
+                break
+            # would like to eliminate double entries in signature space before!
+            if (sig1.vert.co!=sig2.vert.co):
+                transformations.append(group(signature1=sig1, signature2=sig2))
+    return SpacePlot(transformations)
 
-    def __init__(self, signatures=None, plimit = 0.1, group=Reflection):
-        self.group=group
-        self.bm   = bmesh.new()
+class SpacePlot:
+    def __init__(self,elements=None):
         self.elements=[]
-        if signatures: self.compute(signatures)
-
-    def __getitem__(self, arg): # allows accessing the elements directly via []
-        return self.elements[arg]
-
-    def __setitem__(self, arg, item):
-        self.elements[arg] = item
-
+        self.bm = bmesh.new()
+        self.vertex_dict = {}
+        if elements:
+            for e in elements:
+                self.add(e)
+    
+    def __getattr__(self, name):
+        if name == 'd':
+            return self.elements[0].d
+                
     def __len__(self):
         return len(self.elements)
 
     def __iter__(self):
         return iter(self.elements)
 
-    def add(self, tf):
-        newvert = self.bm.verts.new(tf.co)
-        # store the first mesh occurence inside transformation
-        if not hasattr(tf,'bmvert'): tf.bmvert = newvert
-        if not hasattr(tf,'gamma'): tf.gamma = self
-        self.elements.append(tf)
+    def add(self, elem):
+        self.vertex_dict[id(elem)] = self.bm.verts.new(elem.co)
+        self.elements.append(elem)
 
     def plot(self,scene=bpy.context.scene,label="Plot"):
         self.mesh = bpy.data.meshes.new(label)
         self.obj  = bpy.data.objects.new(label, self.mesh)
-        self.bm.to_mesh(self.mesh)
         scene.objects.link(self.obj)
+        self.bm.to_mesh(self.mesh)
 
-    def get_selection(self):
-        self.mesh = bmesh.new()
-        self.mesh.from_mesh(self.obj.data)
-        # have to reassign the new bmeshs verts
-        for (i,tf) in enumerate(self.elements):
-            tf.bmvert = self.mesh.verts[i]
+    def read_mesh(self):
+        self.bm = bmesh.new()
+        self.bm.from_mesh(self.obj.data)
+        for i, elem in enumerate(elements):
+            self.vertex_dict[id(elem)] = self.bm.verts[i]
 
-    def set_selection(self):
-        self.bm.to_mesh(self.mesh) # update mesh
+    def write_mesh(self):
+        self.bm.to_mesh(self.mesh)
 
-    def summe(self):
-        """ hierarchic sum/linear combination of elements """
-        length=len(self)
-        result = self
-        temp = None
-        while length > 1:
-            temp = Gamma(group=self.group)
-            for i in range(math.floor(length/2)):
-                temp.add(result[2*i] + result[2*i+1])
-            if length % 2 == 1:
-                temp[0] = temp[0] + result[length-1]
-            result = temp
-            length = len(result)
-        if result:
-            return result[0]
-        else:
-            return self.group.id()
+    def vertex(self, elem):
+        return self.vertex_dict[id(elem)]
 
-    def compute(self,sigs,plimit=0.1):
-        """ fills the transformation space
-        with all the transformations (pairing)"""
-        for i in range(0,len(sigs)):
-            # pairing with the followers in the array sorted by curvatures for pruning!
-            for j in range(i+1,len(sigs)):
-                # skip following signatures, if the curvature differ too much
-                if (abs(1 - (sigs[j].curv / sigs[i].curv))) > plimit:
-                    break
-                # would like to eliminate double entries in signature space before!
-                if (sigs[i].vert.co!=sigs[j].vert.co):
-                    self.add(self.group(signature1=sigs[i], signature2=sigs[j]))
+def hier_sum(self):
+    """ hierarchic sum/linear combination of tfs """
+    length=len(self)
+    result = self
+    temp = None
+    while length > 1:
+        temp = []
+        for i in range(math.floor(length/2)):
+            temp.add(result[2*i] + result[2*i+1])
+        if length % 2 == 1:
+            temp[0] = temp[0] + result[length-1]
+        result = temp
+        length = len(result)
+    if result:
+        return result[0]
+    else:
+        return self.group.id()
