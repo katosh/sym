@@ -286,7 +286,7 @@ class Gamma:
                 p = pair()
                 p.a = sigs[j]
                 p.b = sigs[i]
-                p.similarity = abs(1 - (sigs[j].curv / sigs[i].curv))
+                p.similarity = abs(sigs[j].curv - sigs[i].curv)
                 pairs.append(p)
         """ sorting the pairs by similarity """
         pairs.sort(key=lambda x: x.similarity, reverse=False)
