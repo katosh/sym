@@ -1,6 +1,7 @@
 from __future__ import print_function # overwriting progress status line
 from mathutils import Vector
 from transformations import Gamma
+from tools import hier_sum
 import math
 import bpy
 
@@ -47,7 +48,7 @@ def cluster(gamma,
         for i in range(steps): # maximal count of shift steps to guarantee termination
             weight = 0
             m_old  = m
-            summe = Gamma(group=gamma.group)
+            sum = []
 
             for x in gamma:
                 dist = d(x, m_old)
@@ -55,12 +56,12 @@ def cluster(gamma,
                     kx = k(abs(dist), bandwidth)
                     x.weight=kx
                     if dist >= 0:
-                        summe.add(x*kx)
+                        sum.append(x*kx)
                     else: # just for projective Space
-                        summe.add((-x)*kx)
+                        sum.append((-x)*kx)
                     weight += kx
             if weight != 0:
-                m = summe.summe()*(1/weight)
+                m = hier_sum(sum)*(1/weight)
                 checked.add(m)
             else: # there are no more close points which is strange
                 print(step,': im lonly')
