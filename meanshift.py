@@ -5,7 +5,7 @@ import math
 import bpy
 
 def k(delta,bandwidth):
-    return ((bandwidth-delta)/bandwidth)**2 # hütchenfunktion als kernel
+    return (bandwidth-delta)/bandwidth # hütchenfunktion als kernel
 
 def cluster(gamma,
         steps=100,
