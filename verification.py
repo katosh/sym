@@ -28,7 +28,7 @@ def show_reflection_planes(clusters=None, scene=bpy.context.scene):
         print(cl.density,'at',cl.co)
         cl.draw(scene)
 
-def get_patches(tf: Transformation) -> (Set(BMVert),Set(BMVert)):
+def get_patches(tf: "Transformation") -> "(Set(BMVert),Set(BMVert))":
     # assuming tf.p/q are of type BMVert
 
     ppatch = Set( [tf.p] )
@@ -41,7 +41,7 @@ def get_patches(tf: Transformation) -> (Set(BMVert),Set(BMVert)):
         neigh_p = get_neighbours(p) - ppatch
         neigh_q = get_neighbours(q) - qpatch
 
-        for np in neigh.p:
+        for np in neigh_p:
             tnp = tf.apply(np)
             for nq in neigh_q:
                 if (tnp.co-nq.co).length < 0.01:
@@ -52,5 +52,5 @@ def get_patches(tf: Transformation) -> (Set(BMVert),Set(BMVert)):
 
     return (ppatch, qpatch)
 
-def get_neighbours(bmvert) -> Set(BMVert):
+def get_neighbours(bmvert) -> "Set(BMVert)":
     return Set(e.other_vert(bmvert) for e in bmvert.link_edges)

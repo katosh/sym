@@ -60,7 +60,7 @@ class Reflection:
             math.acos(self.rnor.z), #theta
             self.roff)) #offset
 
-    def apply(vec)
+    def apply(vec):
         """ takes a vector and returns its reflection"""
         return vec+2*(self.roff - self.rnor*p)*self.rnor
 
