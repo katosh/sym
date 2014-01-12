@@ -91,7 +91,9 @@ class Reflection:
         obj.hide = True
         if maxdensity:
             material = bpy.data.materials.new('color')
-            material.diffuse_color = self.weight/maxdensity, 0.5, 0.5
+            material.diffuse_color = (self.weight/maxdensity, 
+                    1 - self.weight/maxdensity, 
+                    1 - self.weight/maxdensity)
             mesh = obj.data
             mesh.materials.append(material)
 
