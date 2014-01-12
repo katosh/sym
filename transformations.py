@@ -180,13 +180,13 @@ class Reflection:
             angle2 = math.pi - angle1
             if angle1 <= angle2:
                 offset = (t1.roff-t2.roff) * factor
-                da = angle1 * (math.pi/(2*(math.pi - angle1 + 1)))
-                #da = angle1/math.pi ** 2
+                #da = angle1 * (math.pi/(2*(math.pi - angle1 + 1)))
+                da = angle1/math.pi/2
                 return math.sqrt(da**2 + (offset**2))
             else:
                 offset = (t1.roff+t2.roff) * factor
-                da = angle2 * (math.pi/(2*(math.pi - angle2 + 1)))
-                #da = angle2/math.pi ** 2
+                #da = angle2 * (math.pi/(2*(math.pi - angle2 + 1)))
+                da = angle2/math.pi/2
                 return -math.sqrt(da**2 + (offset**2))
 
     d = d_better_then_real
