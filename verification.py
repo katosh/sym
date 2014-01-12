@@ -24,7 +24,7 @@ def showplane(plane):
 
 def show_reflection_planes(clusters=None, scene=bpy.context.scene):
     print('the cluster densities are...')
-    clusters.sort(key=lambda x: x.density, reverse=False)
+    clusters.sort(key=lambda x: x.density, reverse=True)
     maxdens = 0
     for cl in clusters:
         print(cl.density,'at',cl.co)
