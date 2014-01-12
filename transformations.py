@@ -211,7 +211,7 @@ class Gamma:
         self.group=group
         self.bm   = bmesh.new()
         self.elements=[]
-        """ size of the space e.g. max offset difference """
+        """ size of the space e.g. [pi, pi, max offset difference] """
         self.dimensions = []
         if signatures: self.compute(signatures) 
     
@@ -285,3 +285,21 @@ class Gamma:
             if (pairs[i].a.vert.co != pairs[j].b.vert.co):
                 self.add(self.group(signature1=pairs[i].a,
                         signature2=pairs[i].b))
+        self.find_dimensions()
+
+    def find_dimensions(self):
+        minv = []
+        maxv = []
+        for e in self.elements:
+            i = 0
+            for x in e.co:
+                if i == len(minv):
+                    minv.append(x)
+                    maxv.append(x)
+                else:
+                    minv[i] = min(minv[i], x)
+                    maxv[i] = max(maxv[i], x)
+                i += 1
+        for i in range(len(minv)):
+            self.dimensions.append(maxv[i] - minv[i])
+        print('Gammas dimensions are',self.dimensions)
