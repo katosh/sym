@@ -54,28 +54,29 @@ def cluster(gamma,
 
         m = g
         track.add(m)
+        last_weight = 1
         for i in range(steps): # maximal count of shift steps to guarantee termination
             weight = 0
             m_old  = m
             # m = gamma.group.id()
             summe = Gamma(group=gamma.group)
             weights = []
-            test = Gamma(group=gamma.group)
-
+            lin_weights = []
+            """ exponentponent for the kernel k to sharpen it in dense areas """
+            exp = math.log(1/(2*last_weight))/math.log(1/2)
             for x in gamma:
                 dist = d(x, m_old)
                 if abs(dist) < bandwidth:
                     kx = k(abs(dist), bandwidth)
-                    x.weight=kx
+                    lin_weights.append(kx)
+                    x.weight=kx**exp
                     if dist >= 0:
-                        test.add(x)
-                        summe.add(x*kx)
+                        summe.add(x*x.weight)
                     else: # just for projective Space
                         temp = -x
                         temp.weight = -x.weight
-                        test.add(temp)
-                        summe.add(temp*kx)
-                    weights.append(kx)
+                        summe.add(temp*x.weight)
+                    weights.append(x.weight)
             weight = sum(weights)
             if weight != 0:
                 m = summe.summe()*(1/weight)
@@ -84,6 +85,7 @@ def cluster(gamma,
                 m = m_old
                 print(step+slssteps,': im lonly')
             normed = m.normalize()
+            last_weight = sum(lin_weights)
 
             # tracking the shift
             track.add(m)
