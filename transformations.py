@@ -254,20 +254,6 @@ class Gamma:
         self.bm.to_mesh(self.mesh)
         scene.objects.link(self.obj)
 
-    def hier_sum(self):
-        """ hierarchic sum/linear combination of elements """
-        current = self
-        length = len(current)
-        while length > 1:
-            next = []
-            for i in range(length//2): # floor division
-                next.append(current[2*i] + current[2*i+1])
-            if length % 2 == 1:
-                next[0] += current[-1]
-            current = next
-            length = len(current)
-        return current[0]
-
     def compute(self, sigs, maxtransformations = 500):
         """ fills the transformation space
         with all the transformations (pairing)"""
