@@ -77,6 +77,8 @@ def cluster(gamma,
                         summe.add(temp*kx)
                     weights.append(kx)
             weight = sum(weights)
+            if i == 0: # save the density of the original point
+                g.weight = weight
             if weight != 0:
                 m = summe.summe()*(1/weight)
                 checked.add(m)
@@ -92,7 +94,7 @@ def cluster(gamma,
                 edge = set(track.bm.verts[j] for j in range(-2,0))
                 track.bm.edges.new(edge)
 
-            if abs(d(m,m_old))<offset_threshold: 
+            if abs(d(m,m_old))<offset_threshold:
                 break
         if (i==steps-1):
             steplimit+=1
