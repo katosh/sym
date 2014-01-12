@@ -224,8 +224,8 @@ class Gamma:
         self.elements=[]
         """ size of the space e.g. [pi, pi, max offset difference] """
         self.dimensions = []
-        if signatures: self.compute(signatures) 
-    
+        if signatures: self.compute(signatures)
+
     def __getitem__(self, arg): # allows accessing the elements directly via []
         return self.elements[arg]
 
@@ -240,7 +240,7 @@ class Gamma:
 
     def sort(self,**kwargs):
         self.elements.sort(**kwargs)
-        
+
     def add(self, tf):
         tf.bmvert = self.bm.verts.new(tf.co)
         if not hasattr(tf,'index'): tf.index=len(self.elements)
@@ -254,24 +254,20 @@ class Gamma:
         self.bm.to_mesh(self.mesh)
         scene.objects.link(self.obj)
 
-    def summe(self):
+    def hier_sum(self):
         """ hierarchic sum/linear combination of elements """
-        length=len(self)
-        result = self
-        temp = None
+        current = self
+        length = len(current)
         while length > 1:
-            temp = Gamma(group=self.group)
-            for i in range(math.floor(length/2)):
-                temp.add(result[2*i] + result[2*i+1])
+            next = []
+            for i in range(length//2): # floor division
+                next.append(current[2*i] + current[2*i+1])
             if length % 2 == 1:
-                temp[0] = temp[0] + result[length-1]
-            result = temp
-            length = len(result)
-        if result:
-            return result[0]
-        else:
-            return self.group.id()
-    
+                next[0] += current[-1]
+            current = next
+            length = len(current)
+        return current[0]
+
     def compute(self, sigs, maxtransformations = 500):
         """ fills the transformation space
         with all the transformations (pairing)"""

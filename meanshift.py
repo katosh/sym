@@ -60,7 +60,7 @@ def cluster(gamma,
                         summe.add((-x)*kx)
                     weight += kx
             if weight != 0:
-                m = summe.summe()*(1/weight)
+                m = summe.hier_sum()*(1/weight)
                 checked.add(m)
             else: # there are no more close points which is strange
                 print(step,': im lonly')
