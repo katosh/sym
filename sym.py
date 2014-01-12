@@ -17,6 +17,7 @@ def run(obj=None, **args):
 
     print('calculating signatures...')
     sigs = sign.Signatures(obj,**args)
+    sign.plot(sigs=sigs, scene=scene)
     print('calculated',len(sigs),'signatures')
 
     print('filling the transformation space...')
@@ -71,7 +72,6 @@ def createsuzanne():
 
 def debug(profile=True, mkobj=False, **args):
     """ reload modules, invoke profiler """
-    rel()
     if mkobj:
         args.update({'obj': createsuzanne()})
     if profile:
@@ -137,5 +137,3 @@ def get_bmesh(obj,edit=False):
 # autostart
 if __name__ == "__main__": # when started from console, directly run
     debug() # dominiks framework
-else:
-    debug() # alex framework
