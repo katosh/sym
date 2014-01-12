@@ -60,6 +60,10 @@ class Reflection:
             math.acos(self.rnor.z), #theta
             self.roff)) #offset
 
+    def apply(vec)
+        """ takes a vector and returns its reflection"""
+        return vec+2*(self.roff - self.rnor*p)*self.rnor
+
     def draw(self, scene=bpy.context.scene):
         """ draws the reflection plane in the scene """
         base = self.rnor * self.roff
@@ -213,8 +217,8 @@ class Gamma:
         self.elements=[]
         """ size of the space e.g. max offset difference """
         self.dimensions = []
-        if signatures: self.compute(signatures) 
-    
+        if signatures: self.compute(signatures)
+
     def __getitem__(self, arg): # allows accessing the elements directly via []
         return self.elements[arg]
 
@@ -229,7 +233,7 @@ class Gamma:
 
     def sort(self,**kwargs):
         self.elements.sort(**kwargs)
-        
+
     def add(self, tf):
         tf.bmvert = self.bm.verts.new(tf.co)
         if not hasattr(tf,'index'): tf.index=len(self.elements)
@@ -260,7 +264,7 @@ class Gamma:
             return result[0]
         else:
             return self.group.id()
-    
+
     def compute(self, sigs, maxtransformations = 500):
         """ fills the transformation space
         with all the transformations (pairing)"""
