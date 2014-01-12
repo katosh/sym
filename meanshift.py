@@ -9,7 +9,7 @@ def k(delta,bandwidth):
 
 def cluster(gamma,
         steps=100,
-        bandwidth=0.01,
+        bandwidth=0.1,
         densitythreshold=5,
         offset_threshold=0.0001,
         cluster_resolution=0.01,
@@ -33,7 +33,7 @@ def cluster(gamma,
     waitsteps = math.ceil(stepss/1000) # steps befor showing percentage
     slssteps = 0 # steps since last showing of percentage
 
-    average_weight = 1/math.sqrt(2) # halfe the one circles area
+    average_weight = 1/math.sqrt(2) # half the unit circles area
 
     for g in gamma: # starting point
 
@@ -56,25 +56,19 @@ def cluster(gamma,
                 break
         checked.add(g)
         if done: continue
-
         m = g
         track.add(m)
-        last_weight = 1
         for i in range(steps): # maximal count of shift steps to guarantee termination
             weight = 0
             m_old  = m
             # m = gamma.group.id()
             summe = Gamma(group=gamma.group)
             weights = []
-            lin_weights = []
-            """ exponentponent for the kernel k to sharpen it in dense areas """
-            exp = math.log(last_weight/average_weight)/math.log(average_weight)
             for x in gamma:
                 dist = d(x, m_old)
                 if abs(dist) < bandwidth:
                     kx = k(abs(dist), bandwidth)
-                    lin_weights.append(kx)
-                    x.weight=kx**exp
+                    x.weight=kx
                     if dist >= 0:
                         summe.add(x*x.weight)
                     else: # just for projective Space
@@ -90,7 +84,6 @@ def cluster(gamma,
                 m = m_old
                 print(step+slssteps,': im lonly')
             normed = m.normalize()
-            last_weight = sum(lin_weights)
 
             # tracking the shift
             track.add(m)
@@ -104,7 +97,7 @@ def cluster(gamma,
         if (i==steps-1):
             steplimit+=1
         m.origin = g
-        m.weight = last_weight
+        m.weight = weight
         meanshifts.add(m)
 
     if steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
