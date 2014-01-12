@@ -25,5 +25,5 @@ def showplane(plane):
 def show_reflection_planes(clusters=None, scene=bpy.context.scene):
     print('the cluster densities are...')
     for cl in clusters:
-        print(cl.density,'at',cl.co)
+        print(cl.weight,'at',cl.co)
         cl.draw(scene)

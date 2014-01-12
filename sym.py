@@ -26,9 +26,10 @@ def run(obj=None, **args):
 
 
     print('clustering...')
-    clusters = cluster(gamma)
+    clusters, track = cluster(gamma)
     print('found',len(clusters),'clusters')
     clusters.plot(scene,label="clusters")
+    track.plot(bpy.context.scene,label="track")
 
     show_reflection_planes(clusters=clusters,scene=scene)
 
@@ -39,7 +40,7 @@ def run(obj=None, **args):
     lastgamma=gamma
     return sigs,gamma,clusters
 
-def debug(profile=True,prune_perc=0.5, **args):
+def debug(profile=True, **args):
     """ reload modules, invoke profiler """
     rel()
     if profile:
@@ -67,14 +68,24 @@ def createsuzanne():
     ob_new.hide = True
     bpy.context.scene.objects.link(ob_new)
     return ob_new
-    
-def test(p=False, tobj=None, mkobj=False):
-    import imp, cProfile, sym, signatures, transformations, meanshift
+
+def debug(profile=True, mkobj=False, **args):
+    """ reload modules, invoke profiler """
     rel()
-    if p and mkobj:
-        cProfile.run('run(createsuzanne())')
-    elif p:
-        cProfile.run('run()')
+    if mkobj:
+        args.update({'obj': createsuzanne()})
+    if profile:
+        import cProfile, pstats, io
+        pr = cProfile.Profile()
+        pr.enable()
+        ret=run(**args)
+        pr.disable()
+        s = io.StringIO()
+        ps = pstats.Stats(pr, stream=s).strip_dirs()
+        ps.sort_stats('cumulative')
+        ps.print_stats(10)
+        print(s.getvalue())
+        return ret
     else:
         return run(**args)
 
@@ -123,5 +134,8 @@ def get_bmesh(obj,edit=False):
         bm.from_mesh(obj.data)
         return bm
 
-if __name__ == "__main__":
-    test(p=True, mkobj=False)
+# autostart
+if __name__ == "__main__": # when started from console, directly run
+    debug() # dominiks framework
+else:
+    debug() # alex framework
