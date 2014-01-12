@@ -63,7 +63,7 @@ def cluster(gamma,
             weights = []
             lin_weights = []
             """ exponentponent for the kernel k to sharpen it in dense areas """
-            exp = math.log(1/(2*last_weight))/math.log(1/2)
+            exp = math.log(2/last_weight)/math.log(1/2)
             for x in gamma:
                 dist = d(x, m_old)
                 if abs(dist) < bandwidth:
