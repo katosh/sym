@@ -34,8 +34,8 @@ class Reflection:
                 p_real_co = real_co1
                 q_real_co = real_co2
             else:
-                p_real_co = signature1.vert.co * signature1.trans
-                q_real_co = signature2.vert.co * signature2.trans
+                p_real_co = signature1.trans * signature1.vert.co
+                q_real_co = signature2.trans * signature2.vert.co 
 
             self.trans = - p_real_co + q_real_co
             self.rnor = self.trans.normalized()
