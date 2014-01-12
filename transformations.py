@@ -18,21 +18,31 @@ class Reflection:
     def __init__(self,
             signature1=None, signature2=None,
             vert1=None, vert2=None,
+            real_co1=None, real_co2=None,
             rnor=None, roff=None,
             co=None,
-            normalize=True):
+            normalize=True,
+            dimensions = [math.pi, math.pi, 1]): # size of Gamma
         """ create a transformation from either two signatures,
         rnor/roff or coordinates in transf. space """
+        self.dimensions = dimensions
         if signature1 and signature2:
             self.p = signature1.vert
             self.q = signature2.vert
 
-            self.trans = - self.p.co + self.q.co
+            if real_co1 and real_co2:
+                p_real_co = real_co1
+                q_real_co = real_co2
+            else:
+                p_real_co = signature1.vert.co * signature1.trans
+                q_real_co = signature2.vert.co * signature2.trans
+
+            self.trans = - p_real_co + q_real_co
             self.rnor = self.trans.normalized()
 
             # offset calculation in the normal direction
             # = projection of the midpoint in the normal direction
-            self.roff = self.rnor * (self.p.co + self.q.co) / 2
+            self.roff = self.rnor * (p_real_co + q_real_co) / 2
             self.calc_co()
 
             # further normalizing (restriction on right hemisphere)
@@ -153,6 +163,7 @@ class Reflection:
         """ metric, if negative ->
             on oposing hemispheres of sphere,
             distance is then calculated to the antipodal point"""
+        factor = 1 / t1.dimensions[2] # scaling for offset distance
         if t1.rnor is None or t2.rnor is None:
             t1.calc_r()
         if t1.co == t2.co:
@@ -161,12 +172,12 @@ class Reflection:
             angle1 = abs(t1.rnor.angle(t2.rnor))
             angle2 = math.pi - angle1
             if angle1 <= angle2:
-                offset = t1.roff-t2.roff
+                offset = (t1.roff-t2.roff) * factor
                 #da = angle1 * (0.5/(math.pi-angle1+1))
                 da = angle1 * (0.5/(math.pi/2 - angle1 + 1))
                 return math.sqrt(da**2 + (offset**2))
             else:
-                offset = t1.roff+t2.roff
+                offset = (t1.roff+t2.roff) * factor
                 #da = angle2 * (0.5/(math.pi-angle2+1))
                 da = angle2 * (0.5/(math.pi/2 - angle2 + 1))
                 return -math.sqrt(da**2 + (offset**2))
@@ -211,8 +222,10 @@ class Gamma:
         self.group=group
         self.bm   = bmesh.new()
         self.elements=[]
-        if signatures: self.compute(signatures)
-
+        """ size of the space e.g. [pi, pi, max offset difference] """
+        self.dimensions = []
+        if signatures: self.compute(signatures) 
+    
     def __getitem__(self, arg): # allows accessing the elements directly via []
         return self.elements[arg]
 
@@ -258,16 +271,51 @@ class Gamma:
             return result[0]
         else:
             return self.group.id()
-
-    def compute(self,sigs,plimit=0.1):
+    
+    def compute(self, sigs, maxtransformations = 500):
         """ fills the transformation space
         with all the transformations (pairing)"""
+        class pair:
+            def __init__(self):
+                self.a = None
+                self.b = None
+                self.similarity = 0
+        pairs = []
         for i in range(0,len(sigs)):
-            # pairing with the followers in the array sorted by curvatures for pruning!
             for j in range(i+1,len(sigs)):
-                # skip following signatures, if the curvature differ too much
-                if (abs(1 - (sigs[j].curv / sigs[i].curv))) > plimit:
-                    break
-                # would like to eliminate double entries in signature space before!
-                if (sigs[i].vert.co!=sigs[j].vert.co):
-                    self.add(self.group(signature1=sigs[i], signature2=sigs[j]))
+                p = pair()
+                p.a = sigs[j]
+                p.b = sigs[i]
+                p.similarity = abs(sigs[j].curv - sigs[i].curv)
+                pairs.append(p)
+        """ sorting the pairs by similarity """
+        pairs.sort(key=lambda x: x.similarity, reverse=False)
+        """ adding maxtransformation many to the space """
+        for i in range(min(maxtransformations, len(pairs))):
+            a_real_co = pairs[i].a.vert.co * pairs[i].a.trans
+            b_real_co = pairs[i].b.vert.co * pairs[i].b.trans
+            if (a_real_co != b_real_co):
+                self.add(self.group(signature1=pairs[i].a,
+                        signature2=pairs[i].b,
+                        real_co1=a_real_co,
+                        real_co2=b_real_co))
+        self.find_dimensions()
+
+    def find_dimensions(self):
+        minv = []
+        maxv = []
+        for e in self.elements:
+            i = 0
+            for x in e.co:
+                if i == len(minv):
+                    minv.append(x)
+                    maxv.append(x)
+                else:
+                    minv[i] = min(minv[i], x)
+                    maxv[i] = max(maxv[i], x)
+                i += 1
+        for i in range(len(minv)):
+            self.dimensions.append(maxv[i] - minv[i])
+        print('Gammas dimensions are',self.dimensions)
+        for e in self.elements:
+            e.dimensions = self.dimensions

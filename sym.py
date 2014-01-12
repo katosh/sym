@@ -40,7 +40,7 @@ def run(obj=None, **args):
     lastgamma=gamma
     return sigs,gamma,clusters
 
-def debug(profile=True,prune_perc=0.5, **args):
+def debug(profile=True, **args):
     """ reload modules, invoke profiler """
     rel()
     if profile:
@@ -69,20 +69,23 @@ def createsuzanne():
     bpy.context.scene.objects.link(ob_new)
     return ob_new
 
-def debug(profile=True, **args):
+def debug(profile=True, mkobj=False, **args):
     """ reload modules, invoke profiler """
     rel()
+    if mkobj:
+        args.update({'obj': createsuzanne()})
     if profile:
         import cProfile, pstats, io
         pr = cProfile.Profile()
         pr.enable()
-        run(**args)
+        ret=run(**args)
         pr.disable()
         s = io.StringIO()
         ps = pstats.Stats(pr, stream=s).strip_dirs()
         ps.sort_stats('cumulative')
         ps.print_stats(10)
         print(s.getvalue())
+        return ret
     else:
         return run(**args)
 

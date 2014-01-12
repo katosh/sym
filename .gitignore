@@ -6,7 +6,7 @@
 .*.swp
 
 # blender files
-*.blend*
+#*.blend*
 
 # strange stuff
 *~
