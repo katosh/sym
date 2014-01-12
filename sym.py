@@ -136,5 +136,3 @@ def get_bmesh(obj,edit=False):
 # autostart
 if __name__ == "__main__": # when started from console, directly run
     debug() # dominiks framework
-else:
-    debug() # alex framework
