@@ -34,7 +34,7 @@ class Reflection:
 
             # offset calculation in the normal direction
             # = projection of the midpoint in the normal direction
-            self.roff = self.rnor * (self.p.co + self.q.co) / 2
+            self.roff = self.rnor * (p_real_co + q_real_co) / 2
             self.calc_co()
 
             # further normalizing (restriction on right hemisphere)
