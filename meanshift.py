@@ -33,6 +33,8 @@ def cluster(gamma,
     waitsteps = math.ceil(stepss/1000) # steps befor showing percentage
     slssteps = 0 # steps since last showing of percentage
 
+    average_weight = 1/math.sqrt(2) # halfe the one circles area
+
     for g in gamma: # starting point
 
         # show process
@@ -66,13 +68,13 @@ def cluster(gamma,
             weights = []
             lin_weights = []
             """ exponentponent for the kernel k to sharpen it in dense areas """
-            exp = math.log(2/last_weight)/math.log(1/2)
+            exp = math.log(last_weight/average_weight)/math.log(average_weight)
             for x in gamma:
                 dist = d(x, m_old)
                 if abs(dist) < bandwidth:
                     kx = k(abs(dist), bandwidth)
                     lin_weights.append(kx)
-                    x.weight=kx
+                    x.weight=kx**exp
                     if dist >= 0:
                         summe.add(x*x.weight)
                     else: # just for projective Space
@@ -102,7 +104,7 @@ def cluster(gamma,
         if (i==steps-1):
             steplimit+=1
         m.origin = g
-        m.weight = weight
+        m.weight = last_weight
         meanshifts.add(m)
 
     if steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
