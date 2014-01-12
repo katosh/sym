@@ -70,7 +70,7 @@ class Reflection:
             math.acos(self.rnor.z), #theta
             self.roff)) #offset
 
-    def draw(self, scene=bpy.context.scene):
+    def draw(self, scene=bpy.context.scene, maxdensity=None):
         """ draws the reflection plane in the scene """
         base = self.rnor * self.roff
         #rme = bpy.data.meshes.new('rNormal')
@@ -83,10 +83,16 @@ class Reflection:
         n.xyz = (self.co.x,
             self.co.y,
             0)
-        bpy.ops.mesh.primitive_plane_add(
+        mesh = bpy.ops.mesh.primitive_plane_add(
                 radius=2,
                 location = base,
                 rotation=n.zyx)
+        if maxdensity:
+            material = bpy.data.materials.new('color')
+            material.diffuse_color = self.density/maxdensity, 0.5, 0.5
+            obj = bpy.context.active_object
+            mesh = obj.data
+            mesh.materials.append(material)
 
     def calc_r(self):
         self.rnor = Vector((
