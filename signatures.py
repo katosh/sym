@@ -45,7 +45,7 @@ def Signatures(obj, maxverts = 100):
 def show(sigs=None, scene=bpy.context.scene):
     bm = bmesh.new()
     for sig in sigs:
-        bm.verts.new(sig.vert.co * sig.trans)
+        bm.verts.new(sig.trans * sig.vert.co)
     mesh = bpy.data.meshes.new("sigs")
     obj  = bpy.data.objects.new("sigs", mesh)
     bm.to_mesh(mesh)
