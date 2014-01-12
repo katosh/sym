@@ -20,9 +20,11 @@ class Reflection:
             vert1=None, vert2=None,
             rnor=None, roff=None,
             co=None,
-            normalize=True):
+            normalize=True,
+            dimensions = [math.pi, math.pi, 1]): # size of Gamma
         """ create a transformation from either two signatures,
         rnor/roff or coordinates in transf. space """
+        self.dimensions = dimensions
         if signature1 and signature2:
             self.p = signature1.vert
             self.q = signature2.vert
@@ -155,6 +157,7 @@ class Reflection:
         """ metric, if negative ->
             on oposing hemispheres of sphere,
             distance is then calculated to the antipodal point"""
+        factor = 1 / t1.dimensions[2] # scaling for offset distance
         if t1.rnor is None or t2.rnor is None:
             t1.calc_r()
         if t1.co == t2.co:
@@ -163,12 +166,12 @@ class Reflection:
             angle1 = abs(t1.rnor.angle(t2.rnor))
             angle2 = math.pi - angle1
             if angle1 <= angle2:
-                offset = t1.roff-t2.roff
+                offset = (t1.roff-t2.roff) * factor
                 #da = angle1 * (0.5/(math.pi-angle1+1))
                 da = angle1 * (0.5/(math.pi/2 - angle1 + 1))
                 return math.sqrt(da**2 + (offset**2))
             else:
-                offset = t1.roff+t2.roff
+                offset = (t1.roff+t2.roff) * factor
                 #da = angle2 * (0.5/(math.pi-angle2+1))
                 da = angle2 * (0.5/(math.pi/2 - angle2 + 1))
                 return -math.sqrt(da**2 + (offset**2))
@@ -304,3 +307,5 @@ class Gamma:
         for i in range(len(minv)):
             self.dimensions.append(maxv[i] - minv[i])
         print('Gammas dimensions are',self.dimensions)
+        for e in self.elements:
+            e.dimensions = self.dimensions
