@@ -27,6 +27,7 @@ def Signatures(obj, maxverts=50):
     for vert in verts:
         sig = Signature()
         sig.vert = vert
+        sig.vert.co = vert.co * obj.matrix_world
         sig.curv = bm.verts[vert.index].calc_shell_factor()
         sigstemp.append(sig)
         sigstemp.sort(key=lambda x: x.curv, reverse=False) # sort by curvature

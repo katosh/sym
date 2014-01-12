@@ -269,7 +269,6 @@ class Gamma:
                 self.a = None
                 self.b = None
                 self.similarity = 0
-
         pairs = []
         for i in range(0,len(sigs)):
             for j in range(i+1,len(sigs)):
