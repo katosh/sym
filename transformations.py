@@ -34,8 +34,8 @@ class Reflection:
                 p_real_co = real_co1
                 q_real_co = real_co2
             else:
-                p_real_co = signature1.vert.co * signature1.trans
-                q_real_co = signature2.vert.co * signature2.trans
+                p_real_co = signature1.trans * signature1.vert.co
+                q_real_co = signature2.trans * signature2.vert.co 
 
             self.trans = - p_real_co + q_real_co
             self.rnor = self.trans.normalized()
@@ -70,7 +70,7 @@ class Reflection:
             math.acos(self.rnor.z), #theta
             self.roff)) #offset
 
-    def draw(self, scene=bpy.context.scene):
+    def draw(self, scene=bpy.context.scene, maxdensity=None):
         """ draws the reflection plane in the scene """
         base = self.rnor * self.roff
         #rme = bpy.data.meshes.new('rNormal')
@@ -83,10 +83,17 @@ class Reflection:
         n.xyz = (self.co.x,
             self.co.y,
             0)
-        bpy.ops.mesh.primitive_plane_add(
+        mesh = bpy.ops.mesh.primitive_plane_add(
                 radius=2,
                 location = base,
                 rotation=n.zyx)
+        obj = bpy.context.active_object
+        obj.hide = True
+        if maxdensity:
+            material = bpy.data.materials.new('color')
+            material.diffuse_color = self.weight/maxdensity, 0.5, 0.5
+            mesh = obj.data
+            mesh.materials.append(material)
 
     def calc_r(self):
         self.rnor = Vector((
@@ -173,13 +180,13 @@ class Reflection:
             angle2 = math.pi - angle1
             if angle1 <= angle2:
                 offset = (t1.roff-t2.roff) * factor
-                #da = angle1 * (0.5/(math.pi-angle1+1))
-                da = angle1 * (0.5/(math.pi/2 - angle1 + 1))
+                #da = angle1 * (math.pi/(2*(math.pi - angle1 + 1)))
+                da = angle1/math.pi/2
                 return math.sqrt(da**2 + (offset**2))
             else:
                 offset = (t1.roff+t2.roff) * factor
-                #da = angle2 * (0.5/(math.pi-angle2+1))
-                da = angle2 * (0.5/(math.pi/2 - angle2 + 1))
+                #da = angle2 * (math.pi/(2*(math.pi - angle2 + 1)))
+                da = angle2/math.pi/2
                 return -math.sqrt(da**2 + (offset**2))
 
     d = d_better_then_real

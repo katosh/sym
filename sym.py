@@ -17,6 +17,7 @@ def run(obj=None, **args):
 
     print('calculating signatures...')
     sigs = sign.Signatures(obj,**args)
+    sign.plot(sigs=sigs, scene=scene)
     print('calculated',len(sigs),'signatures')
 
     print('filling the transformation space...')

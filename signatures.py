@@ -3,12 +3,13 @@
 import bmesh
 import sym
 import math
+import bpy
 
 class Signature:
     """ holds a point together with its signature """
     pass
 
-def Signatures(obj, maxverts = 100):
+def Signatures(obj, maxverts = 1000):
     """ fill the signature space
         obj: the object to create the signatures of
         curvpruning: the minimal amount of curvature to pass the pruning step
@@ -40,3 +41,12 @@ def Signatures(obj, maxverts = 100):
             print(' process at',math.floor(1000*step/steps)/10,'%', end='\r')
             slssteps = 0
     return sigs
+
+def plot(sigs=None, scene=bpy.context.scene):
+    bm = bmesh.new()
+    for sig in sigs:
+        bm.verts.new(sig.trans * sig.vert.co)
+    mesh = bpy.data.meshes.new("sigs")
+    obj  = bpy.data.objects.new("sigs", mesh)
+    bm.to_mesh(mesh)
+    scene.objects.link(obj)

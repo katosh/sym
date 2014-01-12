@@ -10,12 +10,15 @@ def k(delta,bandwidth):
 
 def cluster(gamma,
         steps=100,
-        bandwidth=0.3,
+        bandwidth=0.05,
         densitythreshold=5,
         offset_threshold=0.0001,
         cluster_resolution=0.01,
-        grid_size=0.1,
+        grid_size=None,
         progress=True):
+
+    if grid_size is None:
+        grid_size = bandwidth / 4
 
     meanshifts=Gamma(group=gamma.group)
     clusters=Gamma(group=gamma.group)
@@ -42,7 +45,6 @@ def cluster(gamma,
                 break
         checked.add(g)
         if done: continue
-
         m = g
         track.add(m)
         for i in range(steps): # maximal count of shift steps to guarantee termination
@@ -53,13 +55,13 @@ def cluster(gamma,
             for x in gamma:
                 dist = d(x, m_old)
                 if abs(dist) < bandwidth:
-                    kx = k(abs(dist), bandwidth)
-                    x.weight=kx
+                    x.weight=k(abs(dist), bandwidth)
                     if dist >= 0:
-                        sum.append(x*kx)
+                        sum.append(x*x.weight)
                     else: # just for projective Space
-                        sum.append((-x)*kx)
-                    weight += kx
+                        sum.append((-x)*x.weight)
+                    weight += x.weight
+
             if weight != 0:
                 m = hier_sum(sum)*(1/weight)
                 checked.add(m)
@@ -75,6 +77,7 @@ def cluster(gamma,
 
             if abs(d(m,m_old)) < offset_threshold:
                 break
+
         if (i==steps-1):
             steplimit+=1
         m.origin = g
