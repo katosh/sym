@@ -71,7 +71,6 @@ def createsuzanne():
 
 def debug(profile=True, mkobj=False, **args):
     """ reload modules, invoke profiler """
-    rel()
     if mkobj:
         args.update({'obj': createsuzanne()})
     if profile:
