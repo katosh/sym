@@ -9,11 +9,14 @@ def k(delta,bandwidth):
 
 def cluster(gamma,
         steps=100,
-        bandwidth=0.3,
+        bandwidth=0.02,
         densitythreshold=5,
         offset_threshold=0.0001,
         cluster_resolution=0.01,
-        grid_size=0.1):
+        grid_size=None):
+
+    if grid_size is None:
+        grid_size = bandwidth / 4
 
     meanshifts=Gamma(group=gamma.group)
     clusters=Gamma(group=gamma.group)
