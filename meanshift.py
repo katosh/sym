@@ -33,8 +33,6 @@ def cluster(gamma,
     waitsteps = math.ceil(stepss/1000) # steps befor showing percentage
     slssteps = 0 # steps since last showing of percentage
 
-    average_weight = 1/math.sqrt(2) # half the unit circles area
-
     for g in gamma: # starting point
 
         # show process
@@ -67,14 +65,11 @@ def cluster(gamma,
             for x in gamma:
                 dist = d(x, m_old)
                 if abs(dist) < bandwidth:
-                    kx = k(abs(dist), bandwidth)
-                    x.weight=kx
+                    x.weight=k(abs(dist), bandwidth)
                     if dist >= 0:
                         summe.add(x*x.weight)
                     else: # just for projective Space
-                        temp = -x
-                        temp.weight = -x.weight
-                        summe.add(temp*x.weight)
+                        summe.add((-x)*x.weight)
                     weights.append(x.weight)
             weight = sum(weights)
             if weight != 0:
@@ -92,7 +87,7 @@ def cluster(gamma,
                 edge = set(track.bm.verts[j] for j in range(-2,0))
                 track.bm.edges.new(edge)
 
-            if abs(d(m,m_old))<offset_threshold: 
+            if abs(d(m,m_old))<offset_threshold:
                 break
         if (i==steps-1):
             steplimit+=1

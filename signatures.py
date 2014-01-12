@@ -42,7 +42,7 @@ def Signatures(obj, maxverts = 1000):
             slssteps = 0
     return sigs
 
-def show(sigs=None, scene=bpy.context.scene):
+def plot(sigs=None, scene=bpy.context.scene):
     bm = bmesh.new()
     for sig in sigs:
         bm.verts.new(sig.trans * sig.vert.co)
