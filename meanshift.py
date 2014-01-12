@@ -1,6 +1,7 @@
-from __future__ import print_function # overwriting proces status line
+from __future__ import print_function # overwriting progress status line
 from mathutils import Vector
 from transformations import Gamma
+from tools import hier_sum
 import math
 import bpy
 
@@ -13,7 +14,8 @@ def cluster(gamma,
         densitythreshold=5,
         offset_threshold=0.0001,
         cluster_resolution=0.01,
-        grid_size=None):
+        grid_size=None,
+        progress=True):
 
     if grid_size is None:
         grid_size = bandwidth / 4
@@ -24,23 +26,12 @@ def cluster(gamma,
     track=Gamma(group=gamma.group)
     d=gamma.group.d
 
-    # compute meanshift
     steplimit=0
+    verbosestep = math.ceil(len(gamma)/1000) # steps before showing percentage
 
-    # show process parameters
-    stepss = len(gamma) # number of steps
-    step = 0 # current step
-    waitsteps = math.ceil(stepss/1000) # steps befor showing percentage
-    slssteps = 0 # steps since last showing of percentage
+    # COMPUTE MEANSHIFT
 
-    for g in gamma: # starting point
-
-        # show process
-        slssteps += 1
-        if slssteps > waitsteps:
-            step += slssteps
-            print(' process at',math.floor(1000*step/stepss)/10,'%', end='\r')
-            slssteps = 0
+    for step, g in enumerate(gamma): # starting point
 
             #print('i jumped',d(m_old,m),'from',
             #        m_old.co,'to',m.co,'to reach the verts')
@@ -59,47 +50,51 @@ def cluster(gamma,
         for i in range(steps): # maximal count of shift steps to guarantee termination
             weight = 0
             m_old  = m
-            # m = gamma.group.id()
-            summe = Gamma(group=gamma.group)
-            weights = []
+            sum = []
+
             for x in gamma:
                 dist = d(x, m_old)
                 if abs(dist) < bandwidth:
                     x.weight=k(abs(dist), bandwidth)
                     if dist >= 0:
-                        summe.add(x*x.weight)
+                        sum.append(x*x.weight)
                     else: # just for projective Space
-                        summe.add((-x)*x.weight)
-                    weights.append(x.weight)
-            weight = sum(weights)
+                        sum.append((-x)*x.weight)
+                    weight += x.weight
+
             if weight != 0:
-                m = summe.summe()*(1/weight)
+                m = hier_sum(sum)*(1/weight)
                 checked.add(m)
             else: # there are no more close points which is strange
-                m = m_old
-                print(step+slssteps,': im lonly')
+                print(step,': im lonly')
             normed = m.normalize()
 
-            # tracking the shift
             track.add(m)
 
             if not normed:
                 edge = set(track.bm.verts[j] for j in range(-2,0))
                 track.bm.edges.new(edge)
 
-            if abs(d(m,m_old))<offset_threshold:
+            if abs(d(m,m_old)) < offset_threshold:
                 break
+
         if (i==steps-1):
             steplimit+=1
         m.origin = g
         m.weight = weight
         meanshifts.add(m)
 
+        # report current progress
+        if progress and step % verbosestep == 0:
+            print(' process at',"%.1f" % (step/len(gamma)*100),'%', end='\r')
+
+
     if steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
 
     meanshifts.sort(key=lambda x: x.weight, reverse=False)
 
-    # create clusters
+    # COMPUTE CLUSTERS
+
     for m in meanshifts:
         if m.weight > densitythreshold:
             found=False
@@ -111,9 +106,7 @@ def cluster(gamma,
                     break
             if not found:
                 m.clusterverts=Gamma()
-                m.density = m.weight
                 m.clusterverts.add(m.origin)
                 clusters.add(m)
-    # plot the debugging track
-    track.plot(bpy.context.scene,label="track")
-    return clusters
+
+    return clusters, track
