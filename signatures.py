@@ -3,6 +3,7 @@
 import bmesh
 import sym
 import math
+import bpy
 
 class Signature:
     """ holds a point together with its signature """
@@ -40,3 +41,12 @@ def Signatures(obj, maxverts = 100):
             print(' process at',math.floor(1000*step/steps)/10,'%', end='\r')
             slssteps = 0
     return sigs
+
+def show(sigs=None, scene=bpy.context.scene):
+    bm = bmesh.new()
+    for sig in sigs:
+        bm.verts.new(sig.vert.co * sig.trans)
+    mesh = bpy.data.meshes.new("sigs")
+    obj  = bpy.data.objects.new("sigs", mesh)
+    bm.to_mesh(mesh)
+    scene.objects.link(obj)

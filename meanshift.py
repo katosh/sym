@@ -72,7 +72,7 @@ def cluster(gamma,
                 if abs(dist) < bandwidth:
                     kx = k(abs(dist), bandwidth)
                     lin_weights.append(kx)
-                    x.weight=kx**exp
+                    x.weight=kx
                     if dist >= 0:
                         summe.add(x*x.weight)
                     else: # just for projective Space
