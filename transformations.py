@@ -87,10 +87,11 @@ class Reflection:
                 radius=2,
                 location = base,
                 rotation=n.zyx)
+        obj = bpy.context.active_object
+        obj.hide = True
         if maxdensity:
             material = bpy.data.materials.new('color')
             material.diffuse_color = self.density/maxdensity, 0.5, 0.5
-            obj = bpy.context.active_object
             mesh = obj.data
             mesh.materials.append(material)
 
