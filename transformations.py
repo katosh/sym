@@ -18,7 +18,7 @@ class Reflection:
     def __init__(self,
             signature1=None, signature2=None,
             vert1=None, vert2=None,
-            p_real=None, q_real=None,
+            real_co1=None, real_co2=None,
             rnor=None, roff=None,
             co=None,
             normalize=True,
@@ -30,9 +30,9 @@ class Reflection:
             self.p = signature1.vert
             self.q = signature2.vert
 
-            if p_real and q_real:
-                p_real_co = p_real
-                q_real_co = q_real
+            if real_co1 and real_co2:
+                p_real_co = real_co1
+                q_real_co = real_co2
             else:
                 p_real_co = signature1.vert.co * signature1.trans
                 q_real_co = signature2.vert.co * signature2.trans
@@ -292,13 +292,13 @@ class Gamma:
         pairs.sort(key=lambda x: x.similarity, reverse=False)
         """ adding maxtransformation many to the space """
         for i in range(min(maxtransformations, len(pairs))):
-            p_real_co = pairs[i].a.vert.co * pairs[i].a.trans
-            q_real_co = pairs[j].a.vert.co * pairs[j].a.trans
-            if (p_real_co != q_real_co):
+            a_real_co = pairs[i].a.vert.co * pairs[i].a.trans
+            b_real_co = pairs[i].b.vert.co * pairs[i].b.trans
+            if (a_real_co != b_real_co):
                 self.add(self.group(signature1=pairs[i].a,
                         signature2=pairs[i].b,
-                        p_real=p_real_co,
-                        q_real=q_real_co))
+                        real_co1=a_real_co,
+                        real_co2=b_real_co))
         self.find_dimensions()
 
     def find_dimensions(self):
