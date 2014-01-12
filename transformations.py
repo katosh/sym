@@ -26,8 +26,10 @@ class Reflection:
         if signature1 and signature2:
             self.p = signature1.vert
             self.q = signature2.vert
+            p_real_co = signature1.vert.co * signature1.trans
+            q_real_co = signature2.vert.co * signature2.trans
 
-            self.trans = - self.p.co + self.q.co
+            self.trans = - p_real_co + q_real_co
             self.rnor = self.trans.normalized()
 
             # offset calculation in the normal direction
