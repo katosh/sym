@@ -4,9 +4,11 @@
 # vim Abfall
 .*.swp[po]
 .*.swp
+.*.swo
 
 # blender files
-*.blend*
+#*.blend*
+*.blend[0-9]
 
 # strange stuff
 *~

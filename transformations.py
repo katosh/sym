@@ -5,6 +5,8 @@ import bpy, bmesh
 from copy import copy
 from mathutils import Vector
 
+import tools
+
 # everything groupspecific is handled in this
 class Reflection:
     """ class representing the !group of reflections,
@@ -18,21 +20,31 @@ class Reflection:
     def __init__(self,
             signature1=None, signature2=None,
             vert1=None, vert2=None,
+            real_co1=None, real_co2=None,
             rnor=None, roff=None,
             co=None,
-            normalize=True):
+            normalize=True,
+            dimensions = [math.pi, math.pi, 1]): # size of Gamma
         """ create a transformation from either two signatures,
         rnor/roff or coordinates in transf. space """
+        self.dimensions = dimensions
         if signature1 and signature2:
             self.p = signature1.vert
             self.q = signature2.vert
 
-            self.trans = - self.p.co + self.q.co
+            if real_co1 and real_co2:
+                p_real_co = real_co1
+                q_real_co = real_co2
+            else:
+                p_real_co = signature1.trans * signature1.vert.co
+                q_real_co = signature2.trans * signature2.vert.co
+
+            self.trans = - p_real_co + q_real_co
             self.rnor = self.trans.normalized()
 
             # offset calculation in the normal direction
             # = projection of the midpoint in the normal direction
-            self.roff = self.rnor * (self.p.co + self.q.co) / 2
+            self.roff = self.rnor * (p_real_co + q_real_co) / 2
             self.calc_co()
 
             # further normalizing (restriction on right hemisphere)
@@ -64,7 +76,7 @@ class Reflection:
         """ takes a vector and returns its reflection"""
         return vec+2*(self.roff - self.rnor*p)*self.rnor
 
-    def draw(self, scene=bpy.context.scene):
+    def draw(self, scene=bpy.context.scene, maxdensity=None):
         """ draws the reflection plane in the scene """
         base = self.rnor * self.roff
         #rme = bpy.data.meshes.new('rNormal')
@@ -77,10 +89,19 @@ class Reflection:
         n.xyz = (self.co.x,
             self.co.y,
             0)
-        bpy.ops.mesh.primitive_plane_add(
+        mesh = bpy.ops.mesh.primitive_plane_add(
                 radius=2,
                 location = base,
                 rotation=n.zyx)
+        obj = bpy.context.active_object
+        obj.hide = True
+        if maxdensity:
+            material = bpy.data.materials.new('color')
+            material.diffuse_color = (self.weight/maxdensity,
+                    1 - self.weight/maxdensity,
+                    1 - self.weight/maxdensity)
+            mesh = obj.data
+            mesh.materials.append(material)
 
     def calc_r(self):
         self.rnor = Vector((
@@ -157,6 +178,7 @@ class Reflection:
         """ metric, if negative ->
             on oposing hemispheres of sphere,
             distance is then calculated to the antipodal point"""
+        factor = 1 / t1.dimensions[2] # scaling for offset distance
         if t1.rnor is None or t2.rnor is None:
             t1.calc_r()
         if t1.co == t2.co:
@@ -165,14 +187,14 @@ class Reflection:
             angle1 = abs(t1.rnor.angle(t2.rnor))
             angle2 = math.pi - angle1
             if angle1 <= angle2:
-                offset = t1.roff-t2.roff
-                #da = angle1 * (0.5/(math.pi-angle1+1))
-                da = angle1 * (0.5/(math.pi/2 - angle1 + 1))
+                offset = (t1.roff-t2.roff) * factor
+                #da = angle1 * (math.pi/(2*(math.pi - angle1 + 1)))
+                da = angle1/math.pi/2
                 return math.sqrt(da**2 + (offset**2))
             else:
-                offset = t1.roff+t2.roff
-                #da = angle2 * (0.5/(math.pi-angle2+1))
-                da = angle2 * (0.5/(math.pi/2 - angle2 + 1))
+                offset = (t1.roff+t2.roff) * factor
+                #da = angle2 * (math.pi/(2*(math.pi - angle2 + 1)))
+                da = angle2/math.pi/2
                 return -math.sqrt(da**2 + (offset**2))
 
     d = d_better_then_real
@@ -214,8 +236,9 @@ class Gamma:
     def __init__(self, signatures=None, plimit = 0.1, group=Reflection):
         self.group=group
         self.bm   = bmesh.new()
+        self.vertex_dict = {}
         self.elements=[]
-        """ size of the space e.g. max offset difference """
+        """ size of the space e.g. [pi, pi, max offset difference] """
         self.dimensions = []
         if signatures: self.compute(signatures)
 
@@ -235,10 +258,29 @@ class Gamma:
         self.elements.sort(**kwargs)
 
     def add(self, tf):
-        tf.bmvert = self.bm.verts.new(tf.co)
-        if not hasattr(tf,'index'): tf.index=len(self.elements)
         if not hasattr(tf,'gamma'): tf.gamma=self
+        self.vertex_dict[id(tf)] = self.bm.verts.new(tf.co)
         self.elements.append(tf)
+
+    def read_selection(self):
+        # take copy, so that we dont die in case of edit-mode
+        self.bm = tools.get_bmesh(self.obj).copy()
+        # update dictionary
+        for i, vert in enumerate(self.bm.verts):
+            self.vertex_dict[id(self.elements[i])] = vert
+
+    def write_selection(self):
+        if self.obj.mode == 'EDIT':
+            bpy.ops.object.editmode_toggle()
+            toggle = True
+
+        self.bm.to_mesh(self.obj.data)
+
+        if toggle: bpy.ops.object.editmode_toggle()
+        # todo: update blender viewport
+
+    def get_vertex(self, elem):
+        return self.vertex_dict[id(elem)]
 
     def plot(self,scene,label="Plot"):
         self.mesh = bpy.data.meshes.new(label)
@@ -246,24 +288,6 @@ class Gamma:
         self.bm.verts.index_update()
         self.bm.to_mesh(self.mesh)
         scene.objects.link(self.obj)
-
-    def summe(self):
-        """ hierarchic sum/linear combination of elements """
-        length=len(self)
-        result = self
-        temp = None
-        while length > 1:
-            temp = Gamma(group=self.group)
-            for i in range(math.floor(length/2)):
-                temp.add(result[2*i] + result[2*i+1])
-            if length % 2 == 1:
-                temp[0] = temp[0] + result[length-1]
-            result = temp
-            length = len(result)
-        if result:
-            return result[0]
-        else:
-            return self.group.id()
 
     def compute(self, sigs, maxtransformations = 500):
         """ fills the transformation space
@@ -273,19 +297,42 @@ class Gamma:
                 self.a = None
                 self.b = None
                 self.similarity = 0
-
         pairs = []
         for i in range(0,len(sigs)):
             for j in range(i+1,len(sigs)):
                 p = pair()
                 p.a = sigs[j]
                 p.b = sigs[i]
-                p.similarity = abs(1 - (sigs[j].curv / sigs[i].curv))
+                p.similarity = abs(sigs[j].curv - sigs[i].curv)
                 pairs.append(p)
         """ sorting the pairs by similarity """
         pairs.sort(key=lambda x: x.similarity, reverse=False)
         """ adding maxtransformation many to the space """
         for i in range(min(maxtransformations, len(pairs))):
-            if (pairs[i].a.vert.co != pairs[j].b.vert.co):
+            a_real_co = pairs[i].a.vert.co * pairs[i].a.trans
+            b_real_co = pairs[i].b.vert.co * pairs[i].b.trans
+            if (a_real_co != b_real_co):
                 self.add(self.group(signature1=pairs[i].a,
-                        signature2=pairs[i].b))
+                        signature2=pairs[i].b,
+                        real_co1=a_real_co,
+                        real_co2=b_real_co))
+        self.find_dimensions()
+
+    def find_dimensions(self):
+        minv = []
+        maxv = []
+        for e in self.elements:
+            i = 0
+            for x in e.co:
+                if i == len(minv):
+                    minv.append(x)
+                    maxv.append(x)
+                else:
+                    minv[i] = min(minv[i], x)
+                    maxv[i] = max(maxv[i], x)
+                i += 1
+        for i in range(len(minv)):
+            self.dimensions.append(maxv[i] - minv[i])
+        print('Gammas dimensions are',self.dimensions)
+        for e in self.elements:
+            e.dimensions = self.dimensions
