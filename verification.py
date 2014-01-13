@@ -31,13 +31,14 @@ def show_reflection_planes(clusters=None, scene=bpy.context.scene):
 def get_patches(clustertfs=[]):
     #assume clusterverts are sorted by weight for reasonable results
     allocated = Set()
+    symmetries = Set()
     for tf in clustertfs:
-        if not {tf.p, tf.q} & allocated
-            ppatch, qpatch = grow_patch(clustertfs[0])
-            allocated = allocated | ppatch | qpatch # union of the sets
+        if not {tf.p, tf.q} & allocated # empty intersection
+            ppatch, qpatch = grow_patch(clustertfs[0], allocated)
+            allocated |= ppatch | qpatch # add sets
+            symmetries.add ( (tf,ppatch,qpatch) )
 
-
-def grow_patch(tf: "Transformation") -> "(Set(BMVert),Set(BMVert))":
+def grow_patch(tf: "Transformation", allocated=Set()) -> "(Set(BMVert),Set(BMVert))":
     # assuming tf.p/q are of type BMVert
 
     ppatch = Set( [tf.p] )
@@ -47,8 +48,8 @@ def grow_patch(tf: "Transformation") -> "(Set(BMVert),Set(BMVert))":
 
     while len(queue)>0:
         p,q = queue.pop()
-        neigh_p = get_neighbours(p) - ppatch
-        neigh_q = get_neighbours(q) - qpatch
+        neigh_p = get_neighbours(p) - ppatch - allocated
+        neigh_q = get_neighbours(q) - qpatch - allocated
 
         for np in neigh_p:
             tnp = tf.apply(np)
