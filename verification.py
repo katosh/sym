@@ -43,12 +43,16 @@ def get_patches(tf: "Transformation") -> "(Set(BMVert),Set(BMVert))":
 
         for np in neigh_p:
             tnp = tf.apply(np)
+            candidates=[]
             for nq in neigh_q:
-                if (tnp.co-nq.co).length < 0.01:
-                    queue.add( (np,nq) )
-                    ppatch.add( np )
-                    qpatch.add( nq )
-                    break
+                dist = (tnp.co-nq.co).length
+                if dist < 0.01:
+                    candidates.append((nq,dist))
+            if candidates:
+                candidates.sort(key=itemgetter(1), reverse=False) # sort by dist
+                queue.add( (np,candidates[0]) )
+                ppatch.add( np )
+                qpatch.add( candidates[0] )
 
     return (ppatch, qpatch)
 
