@@ -97,43 +97,6 @@ def rel():
     imp.reload(transformations)
     imp.reload(meanshift)
 
-### Methods for selection, maybe put into own module
-
-def sel_selected_cluster(clusters=None):
-    """ take selected clusters and select according transformations """
-    if clusters==None:
-        global lastclusters
-        clusters = lastclusters
-    for cluster_index in get_sel_vert(clusters.obj):
-        sel_transformations(clusters[cluster_index].clusterverts)
-
-def sel_transformations(transformations):
-    bm = get_bmesh(transformations[0].gamma.obj)
-    sel_verts(transformations[0].gamma.obj, [t.index for t in transformations])
-
-def sel_verts(obj, vert_indices, select=True):
-    """ selects the given vertices from the Object via their index"""
-    bm = get_bmesh(obj, edit=True)
-    for i in vert_indices:
-        bm.verts[i].select = select
-
-def get_sel_vert(obj):
-    """ returns indices of selected vertices """
-    bm = get_bmesh(obj)
-    return [vert.index for vert in bm.verts if vert.select]
-
-def get_bmesh(obj,edit=False):
-    """ returns the BMesh to the object, writeable if edit is True """
-    if edit:
-        bpy.context.scene.objects.active = obj
-        bpy.ops.object.mode_set(mode='EDIT')
-    if obj.mode=='EDIT':
-        return bmesh.from_edit_mesh(obj.data)
-    elif obj.mode=='OBJECT':
-        bm = bmesh.new()
-        bm.from_mesh(obj.data)
-        return bm
-
 # autostart
 if __name__ == "__main__": # when started from console, directly run
     debug() # dominiks framework

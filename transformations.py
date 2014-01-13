@@ -5,6 +5,8 @@ import bpy, bmesh
 from copy import copy
 from mathutils import Vector
 
+import tools
+
 # everything groupspecific is handled in this
 class Reflection:
     """ class representing the !group of reflections,
@@ -35,7 +37,7 @@ class Reflection:
                 q_real_co = real_co2
             else:
                 p_real_co = signature1.trans * signature1.vert.co
-                q_real_co = signature2.trans * signature2.vert.co 
+                q_real_co = signature2.trans * signature2.vert.co
 
             self.trans = - p_real_co + q_real_co
             self.rnor = self.trans.normalized()
@@ -91,8 +93,8 @@ class Reflection:
         obj.hide = True
         if maxdensity:
             material = bpy.data.materials.new('color')
-            material.diffuse_color = (self.weight/maxdensity, 
-                    1 - self.weight/maxdensity, 
+            material.diffuse_color = (self.weight/maxdensity,
+                    1 - self.weight/maxdensity,
                     1 - self.weight/maxdensity)
             mesh = obj.data
             mesh.materials.append(material)
@@ -230,6 +232,7 @@ class Gamma:
     def __init__(self, signatures=None, plimit = 0.1, group=Reflection):
         self.group=group
         self.bm   = bmesh.new()
+        self.vertex_dict = {}
         self.elements=[]
         """ size of the space e.g. [pi, pi, max offset difference] """
         self.dimensions = []
@@ -251,10 +254,29 @@ class Gamma:
         self.elements.sort(**kwargs)
 
     def add(self, tf):
-        tf.bmvert = self.bm.verts.new(tf.co)
-        if not hasattr(tf,'index'): tf.index=len(self.elements)
         if not hasattr(tf,'gamma'): tf.gamma=self
+        self.vertex_dict[id(tf)] = self.bm.verts.new(tf.co)
         self.elements.append(tf)
+
+    def read_selection(self):
+        # take copy, so that we dont die in case of edit-mode
+        self.bm = tools.get_bmesh(self.obj).copy()
+        # update dictionary
+        for i, vert in enumerate(self.bm.verts):
+            self.vertex_dict[id(self.elements[i])] = vert
+
+    def write_selection(self):
+        if self.obj.mode == 'EDIT':
+            bpy.ops.object.editmode_toggle()
+            toggle = True
+
+        self.bm.to_mesh(self.obj.data)
+
+        if toggle: bpy.ops.object.editmode_toggle()
+        # todo: update blender viewport
+
+    def get_vertex(self, elem):
+        return self.vertex_dict[id(elem)]
 
     def plot(self,scene,label="Plot"):
         self.mesh = bpy.data.meshes.new(label)

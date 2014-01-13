@@ -1,9 +1,10 @@
 """ filling the signature space """
 
 import bmesh
-import sym
 import math
 import bpy
+
+import tools
 
 class Signature:
     """ holds a point together with its signature """
@@ -24,7 +25,7 @@ def Signatures(obj, maxverts = 1000):
     slssteps = 0 # steps since last showing of percentage
 
     sigstemp = []
-    bm = sym.get_bmesh(obj)
+    bm = tools.get_bmesh(obj)
     for vert in verts:
         sig = Signature()
         sig.vert = vert
