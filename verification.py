@@ -28,7 +28,16 @@ def show_reflection_planes(clusters=None, scene=bpy.context.scene):
         print(cl.density,'at',cl.co)
         cl.draw(scene)
 
-def get_patches(tf: "Transformation") -> "(Set(BMVert),Set(BMVert))":
+def get_patches(clustertfs=[]):
+    #assume clusterverts are sorted by weight for reasonable results
+    allocated = Set()
+    for tf in clustertfs:
+        if not {tf.p, tf.q} & allocated
+            ppatch, qpatch = grow_patch(clustertfs[0])
+            allocated = allocated | ppatch | qpatch # union of the sets
+
+
+def grow_patch(tf: "Transformation") -> "(Set(BMVert),Set(BMVert))":
     # assuming tf.p/q are of type BMVert
 
     ppatch = Set( [tf.p] )
