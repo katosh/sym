@@ -1,6 +1,7 @@
 import math
 import bpy
 from mathutils import Vector
+from operator import attrgetter
 
 ### VERIFICATION ###
 
@@ -33,24 +34,25 @@ def show_reflection_planes(clusters=None, scene=bpy.context.scene):
 
 def get_patches(clusters):
     symmetries = []
-    for c in clusters
+    for c in clusters:
         clustertfs = c.clusterverts
         clustertfs.sort(key=attrgetter('weight'), reverse=True)
-        allocated = Set()
+        allocated = set()
         for tf in clustertfs:
-            if not {tf.p, tf.q} & allocated # empty intersection
-                ppatch, qpatch = grow_patch(clustertfs[0], allocated)
+            if not {tf.p, tf.q} & allocated: # empty intersection
+                ppatch, qpatch = grow_patch(tf, allocated)
                 allocated |= ppatch | qpatch # add sets
                 symmetries.append ( (c,tf,ppatch,qpatch) )
     return symmetries
 
-def grow_patch(tf: "Transformation", allocated=Set()) -> "(Set(BMVert),Set(BMVert))":
+def grow_patch(tf: "Transformation", allocated=set()) -> "(set(BMVert),set(BMVert))":
     # assuming tf.p/q are of type BMVert
 
-    ppatch = Set( [tf.p] )
-    qpatch = Set( [tf.q] )
+    ppatch = set( [tf.p] )
+    qpatch = set( [tf.q] )
 
-    queue = Set( (tf.p,tf.q) )
+    queue = set()
+    queue.add ( (tf.p,tf.q) )
 
     while len(queue)>0:
         p,q = queue.pop()
@@ -58,7 +60,7 @@ def grow_patch(tf: "Transformation", allocated=Set()) -> "(Set(BMVert),Set(BMVer
         neigh_q = get_neighbours(q) - qpatch - allocated
 
         for np in neigh_p:
-            tnp = tf.apply(np)
+            tnp = tf.apply(Vector(np.co))
             candidates=[]
             for nq in neigh_q:
                 dist = (tnp.co-nq.co).length
@@ -72,5 +74,5 @@ def grow_patch(tf: "Transformation", allocated=Set()) -> "(Set(BMVert),Set(BMVer
 
     return (ppatch, qpatch)
 
-def get_neighbours(bmvert) -> "Set(BMVert)":
-    return Set(e.other_vert(bmvert) for e in bmvert.link_edges)
+def get_neighbours(bmvert) -> "set(BMVert)":
+    return set(e.other_vert(bmvert) for e in bmvert.link_edges)

@@ -15,15 +15,22 @@ def hier_sum(current: list):
         length = len(current)
     return current[0]
 
-def get_bmesh(obj):
-    """ returns the BMesh to the object
-        choosing the right version depending on current mode """
-    #if edit:
-    #    bpy.context.scene.objects.active = obj
-    #    bpy.ops.object.mode_set(mode='EDIT')
+def bmesh_read(obj):
+    """ returns a copy of the objects bmesh
+        independent of current mode """
     if obj.mode=='EDIT':
-        return bmesh.from_edit_mesh(obj.data)
+        return bmesh.from_edit_mesh(obj.data).copy() # permanent copy
     elif obj.mode=='OBJECT':
         bm = bmesh.new()
         bm.from_mesh(obj.data)
         return bm
+
+def bmesh_write(bmesh, obj):
+    """ writes the bmesh to the object
+    independent of current mode """
+    if self.obj.mode == 'EDIT':
+        bpy.ops.object.editmode_toggle()
+        toggle = True
+    bmesh.to_mesh(obj.data)
+    if toggle: bpy.ops.object.editmode_toggle()
+    # todo: update blender viewport

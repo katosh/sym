@@ -16,21 +16,22 @@ def Signatures(obj, maxverts = 1000):
         curvpruning: the minimal amount of curvature to pass the pruning step
         prune_perc: the relativy amount of vertices pruned randomly (1 will remove all vertices)"""
 
-    verts = obj.data.vertices
+    bm = tools.bmesh_read(obj)
 
     """ to show the status of the process """
-    steps = len(verts) # number of steps
+    steps = len(bm.verts) # number of steps
     step = 0 # current step
     waitsteps = math.ceil(steps/1000) # steps befor showing percentage
     slssteps = 0 # steps since last showing of percentage
 
     sigstemp = []
-    bm = tools.get_bmesh(obj)
-    for vert in verts:
+
+    for vert in bm.verts:
         sig = Signature()
+        sig.bm = bm # keep copy of bmesh, so it doesnt get destroyed
         sig.vert = vert
         sig.trans = obj.matrix_world
-        sig.curv = bm.verts[vert.index].calc_shell_factor()
+        sig.curv = vert.calc_shell_factor()
         sigstemp.append(sig)
         sigstemp.sort(key=lambda x: x.curv, reverse=False) # sort by curvature
         sigs = sigstemp[0:maxverts]

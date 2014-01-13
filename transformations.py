@@ -72,9 +72,9 @@ class Reflection:
             math.acos(self.rnor.z), #theta
             self.roff)) #offset
 
-    def apply(vec):
+    def apply(self, vec):
         """ takes a vector and returns its reflection"""
-        return vec+2*(self.roff - self.rnor*p)*self.rnor
+        return vec+2*(self.roff - self.rnor*vec)*self.rnor
 
     def draw(self, scene=bpy.context.scene, maxdensity=None):
         """ draws the reflection plane in the scene """
@@ -263,21 +263,13 @@ class Gamma:
         self.elements.append(tf)
 
     def read_selection(self):
-        # take copy, so that we dont die in case of edit-mode
-        self.bm = tools.get_bmesh(self.obj).copy()
+        self.bm = tools.bmesh_read(self.obj)
         # update dictionary
         for i, vert in enumerate(self.bm.verts):
             self.vertex_dict[id(self.elements[i])] = vert
 
     def write_selection(self):
-        if self.obj.mode == 'EDIT':
-            bpy.ops.object.editmode_toggle()
-            toggle = True
-
-        self.bm.to_mesh(self.obj.data)
-
-        if toggle: bpy.ops.object.editmode_toggle()
-        # todo: update blender viewport
+        tools.bmesh_write(self.bm,self.obj)
 
     def get_vertex(self, elem):
         return self.vertex_dict[id(elem)]
