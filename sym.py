@@ -11,6 +11,10 @@ import transformations
 def run(obj=None, **args):
     """ runs symmetry detection on the obj
     active object is taken if none is given"""
+
+    # using globals to save last calculated spaces for debugging
+    global sigs, gamma, clusters, track
+
     scene=bpy.context.scene
     if obj == None:
         obj = bpy.context.object # take active object
@@ -34,11 +38,6 @@ def run(obj=None, **args):
 
     show_reflection_planes(clusters=clusters,scene=scene)
 
-    # using globals to save last calculated spaces for external use (selections)
-    # todo: try to somehow append the spaces to the blender plot objects
-    global lastclusters, lastgamma
-    lastclusters=clusters
-    lastgamma=gamma
     return sigs,gamma,clusters
 
 def debug(profile=True, **args):
