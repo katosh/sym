@@ -10,7 +10,7 @@ class Signature:
     """ holds a point together with its signature """
     pass
 
-def Signatures(obj, maxverts = 1000):
+def Signatures(obj, maxverts = 1000, progress = True):
     """ fill the signature space
         obj: the object to create the signatures of
         curvpruning: the minimal amount of curvature to pass the pruning step
@@ -18,15 +18,11 @@ def Signatures(obj, maxverts = 1000):
 
     bm = tools.bmesh_read(obj)
 
-    """ to show the status of the process """
-    steps = len(bm.verts) # number of steps
-    step = 0 # current step
-    waitsteps = math.ceil(steps/1000) # steps befor showing percentage
-    slssteps = 0 # steps since last showing of percentage
+    verbosestep = math.ceil(len(bm.verts)/1000) # steps befor showing percentage
 
     sigstemp = []
 
-    for vert in bm.verts:
+    for step, vert in enumerate(bm.verts):
         sig = Signature()
         sig.bm = bm # keep copy of bmesh, so it doesnt get destroyed
         sig.vert = vert
@@ -36,12 +32,9 @@ def Signatures(obj, maxverts = 1000):
         sigstemp.sort(key=lambda x: x.curv, reverse=False) # sort by curvature
         sigs = sigstemp[0:maxverts]
 
-        """ showing process status """
-        slssteps += 1
-        if slssteps > waitsteps:
-            step += slssteps
-            print(' process at',math.floor(1000*step/steps)/10,'%', end='\r')
-            slssteps = 0
+        # report current progress
+        if progress and step % verbosestep == 0:
+            print(' process at',"%.1f" % (step/len(gamma)*100),'%', end='\r')
     return sigs
 
 def plot(sigs=None, scene=bpy.context.scene):
