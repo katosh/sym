@@ -229,24 +229,18 @@ def compute(sigs, maxtransformations = 500, group=Reflection):
     tfS = tools.Space()
     tfS.d = group.d
 
-    class pair:
-        def __init__(self):
-            self.a = None
-            self.b = None
-            self.similarity = 0
-    pairs = []
-    for i in range(0,len(sigs)):
-        for j in range(i+1,len(sigs)):
-            p = pair()
-            p.a = sigs[j]
-            p.b = sigs[i]
-            p.similarity = abs(sigs[j].curv - sigs[i].curv)
-            pairs.append(p)
-    """ sorting the pairs by similarity """
-    pairs.sort(key=lambda x: x.similarity, reverse=False)
-    """ adding maxtransformation many to the space """
-    for i in range(min(maxtransformations, len(pairs))):
-        if (pairs[i].a.vert.co != pairs[i].b.vert.co):
-            tfS.add(group(signature1=pairs[i].a, signature2=pairs[i].b))
+    pairs=[]
+    for i, a in enumerate(sigs):
+        for b in sigs[i+1:]:
+            similarity = abs(a.curv - b.curv)
+            pair = {'a': a, 'b': b, 'sim': similarity}
+            pairs.append(pair)
+
+    pairs.sort(key=lambda x: x['sim'], reverse=False)
+
+    for p in pairs[:maxtransformations]:
+        if (p['a'].vert.co != p['b'].vert.co):
+            tfS.add(group(signature1=p['a'], signature2=p['b']))
+
     tfS.find_dimensions()
     return tfS
