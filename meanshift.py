@@ -1,6 +1,6 @@
 from __future__ import print_function # overwriting progress status line
 from mathutils import Vector
-from transformations import Gamma
+from tools import Space 
 from tools import hier_sum
 import math
 import bpy
@@ -20,11 +20,11 @@ def cluster(gamma,
     if grid_size is None:
         grid_size = bandwidth / 4
 
-    meanshifts=Gamma(group=gamma.group)
-    clusters=Gamma(group=gamma.group)
-    checked=Gamma(group=gamma.group)
-    track=Gamma(group=gamma.group)
-    d=gamma.group.d
+    meanshifts=Space()
+    clusters=Space()
+    checked=Space()
+    track=Space()
+    d=gamma.d
 
     steplimit=0
     verbosestep = math.ceil(len(gamma)/1000) # steps before showing percentage
@@ -108,7 +108,7 @@ def cluster(gamma,
                     c.clusterverts.add(m.origin)
                     break
             if not found:
-                m.clusterverts=Gamma()
+                m.clusterverts=Space()
                 m.clusterverts.add(m.origin)
                 clusters.add(m)
 

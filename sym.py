@@ -3,7 +3,6 @@ sys.path.append(r'.')   # add script path to system pathes to find the other mod
 import bpy, bmesh
 
 import signatures as sign
-from transformations import Gamma
 from meanshift import cluster
 from verification import show_reflection_planes
 import transformations
@@ -13,7 +12,7 @@ def run(obj=None, **args):
     active object is taken if none is given"""
 
     # using globals to save last calculated spaces for debugging
-    global sigs, gamma, clusters, track
+    global sigs, tfS, clusters, track
 
     scene=bpy.context.scene
     if obj == None:
@@ -25,20 +24,20 @@ def run(obj=None, **args):
     print('calculated',len(sigs),'signatures')
 
     print('filling the transformation space...')
-    gamma = Gamma(sigs,group=transformations.Reflection)
-    print('found',len(gamma),'transformations')
-    gamma.plot(scene,label="transformations")
+    tfS = transformations.compute(sigs, group=transformations.Reflection)
+    print('found',len(tfS),'transformations')
+    tfS.plot(scene,label="transformations")
 
 
     print('clustering...')
-    clusters, track = cluster(gamma)
+    clusters, track = cluster(tfS)
     print('found',len(clusters),'clusters')
     clusters.plot(scene,label="clusters")
     track.plot(bpy.context.scene,label="track")
 
     show_reflection_planes(clusters=clusters,scene=scene)
 
-    return sigs,gamma,clusters
+    return sigs,tfS,clusters
 
 def debug(profile=True, **args):
     """ reload modules, invoke profiler """

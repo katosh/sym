@@ -229,117 +229,36 @@ class Translation:
     def d(t1, t2):
         return (t1.co-t2.co).length
 
-class Gamma:
-    """ collection of transformations also containing
-    the representing blender object """
+def compute(sigs, maxtransformations = 500, group=Reflection):
+    """ fills the transformation space
+    with all the transformations (pairing)"""
 
-    def __init__(self, signatures=None, plimit = 0.1, group=Reflection):
-        self.group=group
-        self.bm   = bmesh.new()
-        self.vertex_dict = {}
-        self.elements=[]
-        """ size of the space e.g. [pi, pi, max offset difference] """
-        self.dimensions = []
-        if signatures: self.compute(signatures)
+    tfS = tools.Space()
+    tfS.d = group.d
 
-    def __getitem__(self, arg): # allows accessing the elements directly via []
-        return self.elements[arg]
-
-    def __setitem__(self, arg, item):
-        self.elements[arg] = item
-
-    def __len__(self):
-        return len(self.elements)
-
-    def __iter__(self):
-        return iter(self.elements)
-
-    def sort(self,**kwargs):
-        self.elements.sort(**kwargs)
-
-    def add(self, tf):
-        if not hasattr(tf,'gamma'): tf.gamma=self
-        self.vertex_dict[id(tf)] = self.bm.verts.new(tf.co)
-        self.elements.append(tf)
-
-    def get_vertex(self, elem):
-        return self.vertex_dict[id(elem)]
-
-    def set_selected(self, tfs, exlusive = True, show = True):
-        if exlusive:
-            for tf in self.elements:
-                self.get_vertex(tf).select = False
-        for tf in tfs:
-            self.get_vertex(tf).select = True
-        tools.bmesh_write(self.bm,self.obj)
-
-        if show:
-            bpy.context.scene.objects.active = self.obj
-            bpy.ops.object.mode_set(mode='EDIT') # doesnt work
-
-    def get_selected(self):
-        self.bm = tools.bmesh_read(self.obj)
-        # update dictionary
-        for i, vert in enumerate(self.bm.verts):
-            self.vertex_dict[id(self.elements[i])] = vert
-
-        selected = []
-        for tf in self:
-            if self.get_vertex(tf).select == True:
-                selected.append(tf)
-        return selected
-
-    def plot(self,scene,label="Plot"):
-        self.mesh = bpy.data.meshes.new(label)
-        self.obj  = bpy.data.objects.new(label, self.mesh)
-        self.bm.verts.index_update()
-        self.bm.to_mesh(self.mesh)
-        scene.objects.link(self.obj)
-
-    def compute(self, sigs, maxtransformations = 500):
-        """ fills the transformation space
-        with all the transformations (pairing)"""
-        class pair:
-            def __init__(self):
-                self.a = None
-                self.b = None
-                self.similarity = 0
-        pairs = []
-        for i in range(0,len(sigs)):
-            for j in range(i+1,len(sigs)):
-                p = pair()
-                p.a = sigs[j]
-                p.b = sigs[i]
-                p.similarity = abs(sigs[j].curv - sigs[i].curv)
-                pairs.append(p)
-        """ sorting the pairs by similarity """
-        pairs.sort(key=lambda x: x.similarity, reverse=False)
-        """ adding maxtransformation many to the space """
-        for i in range(min(maxtransformations, len(pairs))):
-            a_real_co = pairs[i].a.vert.co * pairs[i].a.trans
-            b_real_co = pairs[i].b.vert.co * pairs[i].b.trans
-            if (a_real_co != b_real_co):
-                self.add(self.group(signature1=pairs[i].a,
-                        signature2=pairs[i].b,
-                        real_co1=a_real_co,
-                        real_co2=b_real_co))
-        self.find_dimensions()
-
-    def find_dimensions(self):
-        minv = []
-        maxv = []
-        for e in self.elements:
-            i = 0
-            for x in e.co:
-                if i == len(minv):
-                    minv.append(x)
-                    maxv.append(x)
-                else:
-                    minv[i] = min(minv[i], x)
-                    maxv[i] = max(maxv[i], x)
-                i += 1
-        for i in range(len(minv)):
-            self.dimensions.append(maxv[i] - minv[i])
-        print('Gammas dimensions are',self.dimensions)
-        for e in self.elements:
-            e.dimensions = self.dimensions
+    class pair:
+        def __init__(self):
+            self.a = None
+            self.b = None
+            self.similarity = 0
+    pairs = []
+    for i in range(0,len(sigs)):
+        for j in range(i+1,len(sigs)):
+            p = pair()
+            p.a = sigs[j]
+            p.b = sigs[i]
+            p.similarity = abs(sigs[j].curv - sigs[i].curv)
+            pairs.append(p)
+    """ sorting the pairs by similarity """
+    pairs.sort(key=lambda x: x.similarity, reverse=False)
+    """ adding maxtransformation many to the space """
+    for i in range(min(maxtransformations, len(pairs))):
+        a_real_co = pairs[i].a.vert.co * pairs[i].a.trans
+        b_real_co = pairs[i].b.vert.co * pairs[i].b.trans
+        if (a_real_co != b_real_co):
+            tfS.add(group(signature1=pairs[i].a,
+                    signature2=pairs[i].b,
+                    real_co1=a_real_co,
+                    real_co2=b_real_co))
+    tfS.find_dimensions()
+    return tfS

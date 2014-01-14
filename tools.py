@@ -36,3 +36,86 @@ def bmesh_write(bmesh, obj):
     bmesh.to_mesh(obj.data)
     if toggle: bpy.ops.object.editmode_toggle()
     # todo: update blender viewport
+
+class Space():
+    """ collection of points
+        with methods for plotting and selection"""
+
+    def __init__(self):
+        self.bm   = bmesh.new()
+        self.vertex_dict = {}
+        self.elements=[]
+        """ size of the space e.g. [pi, pi, max offset difference] """
+        self.dimensions = []
+
+    def __getitem__(self, arg): # allows accessing the elements directly via []
+        return self.elements[arg]
+
+    def __setitem__(self, arg, item):
+        self.elements[arg] = item
+
+    def __len__(self):
+        return len(self.elements)
+
+    def __iter__(self):
+        return iter(self.elements)
+
+    def sort(self,**kwargs):
+        self.elements.sort(**kwargs)
+
+    def add(self, elem):
+        self.vertex_dict[id(elem)] = self.bm.verts.new(elem.co)
+        self.elements.append(elem)
+
+    def get_vertex(self, elem):
+        return self.vertex_dict[id(elem)]
+
+    def set_selected(self, elements, exlusive = True, show = True):
+        if exlusive:
+            for elem in self.elements:
+                self.get_vertex(elem).select = False
+        for elem in elements:
+            self.get_vertex(elem).select = True
+        bmesh_write(self.bm,self.obj)
+
+        if show:
+            bpy.context.scene.objects.active = self.obj
+            bpy.ops.object.mode_set(mode='EDIT') # doesnt work
+
+    def get_selected(self):
+        self.bm = bmesh_read(self.obj)
+        # update dictionary
+        for i, vert in enumerate(self.bm.verts):
+            self.vertex_dict[id(self.elements[i])] = vert
+
+        selected = []
+        for tf in self:
+            if self.get_vertex(tf).select == True:
+                selected.append(tf)
+        return selected
+
+    def plot(self, scene=bpy.context.scene, label="Space"):
+        self.mesh = bpy.data.meshes.new(label)
+        self.obj  = bpy.data.objects.new(label, self.mesh)
+        self.bm.verts.index_update() # necessary?
+        self.bm.to_mesh(self.mesh)
+        scene.objects.link(self.obj)
+
+    def find_dimensions(self):
+        minv = []
+        maxv = []
+        for e in self.elements:
+            i = 0
+            for x in e.co:
+                if i == len(minv):
+                    minv.append(x)
+                    maxv.append(x)
+                else:
+                    minv[i] = min(minv[i], x)
+                    maxv[i] = max(maxv[i], x)
+                i += 1
+        for i in range(len(minv)):
+            self.dimensions.append(maxv[i] - minv[i])
+        print('Space dimensions are',self.dimensions)
+        for e in self.elements: # necessary?
+            e.dimensions = self.dimensions

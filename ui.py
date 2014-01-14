@@ -10,17 +10,23 @@ class UIPanel(bpy.types.Panel):
     def draw (self, context):
         self.layout.operator("sym.reload")
         self.layout.operator("sym.debug")
-        self.layout.operator("sym.show_cluster")
+        self.layout.operator("sym.cls_to_tfs")
 
-class show_cluster(bpy.types.Operator):
-    bl_idname = "sym.show_cluster"
-    bl_label = "show cluster"
-
+class cls_to_tfs(bpy.types.Operator):
+    bl_idname = "sym.cls_to_tfs"
+    bl_label = "selected cls to tfs"
     def execute(self, context):
         sel_cls = sym.clusters.get_selected()
         sel_tfs = [tf for cl in sel_cls for tf in cl.clusterverts]
-        sym.gamma.set_selected(sel_tfs)
+        sym.tfS.set_selected(sel_tfs)
         return {'FINISHED'}
+        
+class tfs_to_sigs:
+    bl_idname = "sym.tfs_to_sigs"
+    bl_label = "selected tfs to sigs"    
+    def execute(self, context):
+        sel_tfs = sym.tfS.get_selected()
+        #sel_sigs = [tf. for tf in sel_tfs]
 
 class debug(bpy.types.Operator):
     bl_idname = "sym.debug"
