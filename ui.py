@@ -8,6 +8,8 @@ class UIPanel(bpy.types.Panel):
     bl_region_type = "UI"
 
     def draw (self, context):
+        self.layout.operator("sym.reload")
+        self.layout.operator("sym.debug")
         self.layout.operator("sym.show_cluster")
 
 class show_cluster(bpy.types.Operator):
@@ -28,7 +30,17 @@ class show_cluster(bpy.types.Operator):
         tfs.write_selection()
 
         bpy.context.scene.objects.active = tfs.obj
-        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.object.mode_set(mode='EDIT') # doesnt work
         return {'FINISHED'}
+
+class debug(bpy.types.Operator):
+    bl_idname = "sym.debug"
+    bl_label = "debug"
+    def execute(self, context): sym.debug(); return {'FINISHED'}
+
+class reload(bpy.types.Operator):
+    bl_idname = "sym.reload"
+    bl_label = "reload"
+    def execute(self, context): sym.reload(); return {'FINISHED'}
 
 bpy.utils.register_module(__name__)

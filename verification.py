@@ -1,7 +1,7 @@
 import math
 import bpy
 from mathutils import Vector
-from operator import attrgetter
+from operator import attrgetter, itemgetter
 
 ### VERIFICATION ###
 
@@ -60,17 +60,18 @@ def grow_patch(tf: "Transformation", allocated=set()) -> "(set(BMVert),set(BMVer
         neigh_q = get_neighbours(q) - qpatch - allocated
 
         for np in neigh_p:
-            tnp = tf.apply(Vector(np.co))
+            tnp = tf.apply(np.co)
             candidates=[]
             for nq in neigh_q:
-                dist = (tnp.co-nq.co).length
+                dist = (tnp-nq.co).length
                 if dist < 0.01:
                     candidates.append((nq,dist))
             if candidates:
                 candidates.sort(key=itemgetter(1), reverse=False) # sort by dist
-                queue.add( (np,candidates[0]) )
+                matchedq = candidates[0][0]
+                queue.add( (np, matchedq) )
                 ppatch.add( np )
-                qpatch.add( candidates[0] )
+                qpatch.add( matchedq )
 
     return (ppatch, qpatch)
 

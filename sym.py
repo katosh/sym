@@ -88,13 +88,14 @@ def debug(profile=True, mkobj=False, **args):
     else:
         return run(**args)
 
-def rel():
+def reload():
     """ reload modules """
-    import imp, sym, signatures, transformations, meanshift
+    import imp, sym, signatures, transformations, meanshift, ui
     imp.reload(sym)
     imp.reload(signatures)
     imp.reload(transformations)
     imp.reload(meanshift)
+    imp.reload(ui)
 
 # autostart
 if __name__ == "__main__": # when started from console, directly run
