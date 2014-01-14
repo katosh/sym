@@ -20,8 +20,7 @@ def run(obj=None, **args):
 
     print('calculating signatures...')
     sigs = sign.compute(obj,**args)
-    sigs.plot(label='signature space')
-    sign.plot(sigs=sigs, scene=scene)
+    sigs.plot(label='signature space', scene=scene, matrix_world=obj.matrix_world)
     print('calculated',len(sigs),'signatures')
 
     print('filling the transformation space...')
@@ -36,7 +35,7 @@ def run(obj=None, **args):
     clusters.plot(scene,label="clusters")
     track.plot(bpy.context.scene,label="track")
 
-    show_reflection_planes(clusters=clusters,scene=scene)
+    show_reflection_planes(clusters=clusters,scene=scene, matrix_world=obj.matrix_world)
 
     return sigs,tfS,clusters
 
@@ -90,12 +89,13 @@ def debug(profile=True, mkobj=False, **args):
 
 def reload():
     """ reload modules """
-    import imp, sym, signatures, transformations, meanshift, ui
+    import imp, sym, signatures, transformations, meanshift, ui, tools
     imp.reload(sym)
     imp.reload(signatures)
     imp.reload(transformations)
     imp.reload(meanshift)
     imp.reload(ui)
+    imp.reload(tools)
 
 # autostart
 if __name__ == "__main__": # when started from console, directly run

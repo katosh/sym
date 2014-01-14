@@ -76,7 +76,7 @@ class Reflection:
         """ takes a vector and returns its reflection"""
         return vec+2*(self.roff - self.rnor*vec)*self.rnor
 
-    def draw(self, scene=bpy.context.scene, maxdensity=None):
+    def draw(self, scene=bpy.context.scene, maxdensity=None, matrix_world=None):
         """ draws the reflection plane in the scene """
         base = self.rnor * self.roff
         #rme = bpy.data.meshes.new('rNormal')
@@ -95,6 +95,8 @@ class Reflection:
                 rotation=n.zyx)
         obj = bpy.context.active_object
         obj.hide = True
+        if matrix_world:
+            obj.matrix_world = matrix_world
         if maxdensity:
             material = bpy.data.materials.new('color')
             material.diffuse_color = (self.weight/maxdensity,

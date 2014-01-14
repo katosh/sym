@@ -23,14 +23,14 @@ def showplane(plane):
             location = base,
             rotation=n.zyx)
 
-def show_reflection_planes(clusters=None, scene=bpy.context.scene):
+def show_reflection_planes(clusters=None, scene=bpy.context.scene, matrix_world=None):
     if len(clusters)==0: return
     print('the cluster densities are...')
     clusters.sort(key=lambda x: x.weight, reverse=True)
     maxdens = clusters[0].weight
     for cl in clusters:
         print(cl.weight,'at',cl.co)
-        cl.draw(scene, maxdensity=maxdens)
+        cl.draw(scene, maxdensity=maxdens, matrix_world=matrix_world)
 
 def get_patches(clusters):
     symmetries = []

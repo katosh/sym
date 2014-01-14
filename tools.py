@@ -94,9 +94,11 @@ class Space():
                 selected.append(tf)
         return selected
 
-    def plot(self, scene=bpy.context.scene, label="Space"):
+    def plot(self, scene=bpy.context.scene, label="Space", matrix_world=None):
         self.mesh = bpy.data.meshes.new(label)
         self.obj  = bpy.data.objects.new(label, self.mesh)
+        if matrix_world:
+            self.obj.matrix_world = matrix_world
         self.bm.verts.index_update() # necessary?
         self.bm.to_mesh(self.mesh)
         scene.objects.link(self.obj)
