@@ -1,6 +1,7 @@
 """  module for all routines not directly connected to any other modules """
 
 import bmesh
+import bpy
 
 def hier_sum(current: list):
     """ hierarchic sum/linear combination of elements """
@@ -28,7 +29,8 @@ def bmesh_read(obj):
 def bmesh_write(bmesh, obj):
     """ writes the bmesh to the object
     independent of current mode """
-    if self.obj.mode == 'EDIT':
+    toggle = False
+    if obj.mode == 'EDIT':
         bpy.ops.object.editmode_toggle()
         toggle = True
     bmesh.to_mesh(obj.data)
