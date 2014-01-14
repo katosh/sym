@@ -27,35 +27,33 @@ class Reflection:
         rnor/roff or coordinates in transf. space """
         self.dimensions = dimensions
         if signature1 and signature2:
-            self.p = signature1.vert
-            self.q = signature2.vert
+            self.p = signature1
+            self.q = signature2
 
-            self.trans = - self.p.co + self.q.co
+            co_p = signature1.vert.co
+            co_q = signature2.vert.co
+
+            self.trans = - co_p + co_q
             self.rnor = self.trans.normalized()
 
             # offset calculation in the normal direction
             # = projection of the midpoint in the normal direction
-            self.roff = self.rnor * (self.p.co + self.q.co) / 2
+            self.roff = self.rnor * (co_p + co_q) / 2
             self.calc_co()
-
-            # further normalizing (restriction on right hemisphere)
-            if normalize:
-                self.normalize()
-
-        elif rnor!=None and roff!=None:
+        elif rnor!=None and roff!=None: # never called
             self.rnor = rnor
             self.roff = roff
-            self.calc_r()
-            if normalize:
-                self.normalize(calc=False)
-            else:
-                self.calc_co()
+            self.calc_co()
         elif co:
             self.co = co
-            if normalize:
-                self.normalize()
+            #self.calc_r not necessary?
         else:
             raise Exception("Invalid arguments for Transformation")
+
+        # further normalizing (restriction on right hemisphere)
+        if normalize:
+            self.normalize()
+
 
     def calc_co(self):
         self.co = Vector((
@@ -103,10 +101,6 @@ class Reflection:
             math.cos(self.co.y)))
         self.roff = self.co.z
 
-    @staticmethod
-    def id():
-        return Reflection(co=Vector((0,0,0)))
-
     def normalize(self):
         """ restriction on one hemisphere """
         normed = False
@@ -118,8 +112,8 @@ class Reflection:
             normed = True
         if self.co.x < -math.pi/2 or self.co.x >= math.pi/2:
             self.co = (-self).co
-            self.calc_r()
             normed = True
+        self.calc_r() # necessary?
         return normed
 
     def __add__(a, b):
@@ -172,7 +166,7 @@ class Reflection:
             on oposing hemispheres of sphere,
             distance is then calculated to the antipodal point"""
         factor = 1 / t1.dimensions[2] # scaling for offset distance
-        if t1.rnor is None or t2.rnor is None:
+        if t1.rnor is None or t2.rnor is None: # maybe just lazy evaluation?
             t1.calc_r()
         if t1.co == t2.co:
             return 0
@@ -200,10 +194,10 @@ class Translation:
             co=None):
         """ create a transformation from either two signatures, rnor/roff or coordinates in transf. space """
         if signature1 and signature2:
-            self.p = signature1.vert
-            self.q = signature2.vert
+            self.p = signature1
+            self.q = signature2
 
-            self.co = - self.p.co + self.q.co
+            self.co = - self.p.vert.co + self.q.vert.co
         elif co:
             self.co = co
         else:

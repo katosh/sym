@@ -46,7 +46,7 @@ def get_patches(clusters):
     return symmetries
 
 def grow_patch(tf: "Transformation", allocated=set()) -> "(set(BMVert),set(BMVert))":
-    # assuming tf.p/q are of type BMVert
+    # assuming tf.p/q are signatures
 
     ppatch = set( [tf.p] )
     qpatch = set( [tf.q] )
@@ -75,5 +75,6 @@ def grow_patch(tf: "Transformation", allocated=set()) -> "(set(BMVert),set(BMVer
 
     return (ppatch, qpatch)
 
-def get_neighbours(bmvert) -> "set(BMVert)":
+def get_neighbours(sig) -> "set(BMVert)":
+    bmvert = sig.vert
     return set(e.other_vert(bmvert) for e in bmvert.link_edges)
