@@ -11,7 +11,7 @@ def k(delta,bandwidth):
 def cluster(gamma,
         steps=100,
         bandwidth=0.05,
-        densitythreshold=5,
+        densitythreshold=3,
         offset_threshold=0.0001,
         cluster_resolution=0.01,
         grid_size=None,

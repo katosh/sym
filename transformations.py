@@ -19,8 +19,6 @@ class Reflection:
 
     def __init__(self,
             signature1=None, signature2=None,
-            vert1=None, vert2=None,
-            real_co1=None, real_co2=None,
             rnor=None, roff=None,
             co=None,
             normalize=True,
@@ -32,19 +30,12 @@ class Reflection:
             self.p = signature1.vert
             self.q = signature2.vert
 
-            if real_co1 and real_co2:
-                p_real_co = real_co1
-                q_real_co = real_co2
-            else:
-                p_real_co = signature1.trans * signature1.vert.co
-                q_real_co = signature2.trans * signature2.vert.co
-
-            self.trans = - p_real_co + q_real_co
+            self.trans = - self.p.co + self.q.co
             self.rnor = self.trans.normalized()
 
             # offset calculation in the normal direction
             # = projection of the midpoint in the normal direction
-            self.roff = self.rnor * (p_real_co + q_real_co) / 2
+            self.roff = self.rnor * (self.p.co + self.q.co) / 2
             self.calc_co()
 
             # further normalizing (restriction on right hemisphere)
@@ -96,7 +87,7 @@ class Reflection:
         obj = bpy.context.active_object
         obj.hide = True
         if matrix_world:
-            obj.matrix_world = matrix_world
+            obj.matrix_world = matrix_world * obj.matrix_world
         if maxdensity:
             material = bpy.data.materials.new('color')
             material.diffuse_color = (self.weight/maxdensity,
@@ -255,12 +246,7 @@ def compute(sigs, maxtransformations = 500, group=Reflection):
     pairs.sort(key=lambda x: x.similarity, reverse=False)
     """ adding maxtransformation many to the space """
     for i in range(min(maxtransformations, len(pairs))):
-        a_real_co = pairs[i].a.vert.co * pairs[i].a.trans
-        b_real_co = pairs[i].b.vert.co * pairs[i].b.trans
-        if (a_real_co != b_real_co):
-            tfS.add(group(signature1=pairs[i].a,
-                    signature2=pairs[i].b,
-                    real_co1=a_real_co,
-                    real_co2=b_real_co))
+        if (pairs[i].a.vert.co != pairs[i].b.vert.co):
+            tfS.add(group(signature1=pairs[i].a, signature2=pairs[i].b))
     tfS.find_dimensions()
     return tfS
