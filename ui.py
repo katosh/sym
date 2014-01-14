@@ -17,20 +17,9 @@ class show_cluster(bpy.types.Operator):
     bl_label = "show cluster"
 
     def execute(self, context):
-        cls = sym.clusters
-        tfs = sym.gamma
-
-        cls.read_selection()
-        select = []
-        for cl in cls:
-            if cls.get_vertex(cl).select == True:
-                select.extend(cl.clusterverts)
-        for tf in select:
-            tfs.get_vertex(tf).select = True
-        tfs.write_selection()
-
-        bpy.context.scene.objects.active = tfs.obj
-        bpy.ops.object.mode_set(mode='EDIT') # doesnt work
+        sel_cls = sym.clusters.get_selected()
+        sel_tfs = [tf for cl in sel_cls for tf in cl.clusterverts]
+        sym.gamma.set_selected(sel_tfs)
         return {'FINISHED'}
 
 class debug(bpy.types.Operator):

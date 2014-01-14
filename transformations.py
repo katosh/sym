@@ -262,17 +262,32 @@ class Gamma:
         self.vertex_dict[id(tf)] = self.bm.verts.new(tf.co)
         self.elements.append(tf)
 
-    def read_selection(self):
+    def get_vertex(self, elem):
+        return self.vertex_dict[id(elem)]
+
+    def set_selected(self, tfs, exlusive = True, show = True):
+        if exlusive:
+            for tf in self.elements:
+                self.get_vertex(tf).select = False
+        for tf in tfs:
+            self.get_vertex(tf).select = True
+        tools.bmesh_write(self.bm,self.obj)
+
+        if show:
+            bpy.context.scene.objects.active = self.obj
+            bpy.ops.object.mode_set(mode='EDIT') # doesnt work
+
+    def get_selected(self):
         self.bm = tools.bmesh_read(self.obj)
         # update dictionary
         for i, vert in enumerate(self.bm.verts):
             self.vertex_dict[id(self.elements[i])] = vert
 
-    def write_selection(self):
-        tools.bmesh_write(self.bm,self.obj)
-
-    def get_vertex(self, elem):
-        return self.vertex_dict[id(elem)]
+        selected = []
+        for tf in self:
+            if self.get_vertex(tf).select == True:
+                selected.append(tf)
+        return selected
 
     def plot(self,scene,label="Plot"):
         self.mesh = bpy.data.meshes.new(label)
