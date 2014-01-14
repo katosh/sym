@@ -19,7 +19,8 @@ def run(obj=None, **args):
         obj = bpy.context.object # take active object
 
     print('calculating signatures...')
-    sigs = sign.Signatures(obj,**args)
+    sigs = sign.compute(obj,**args)
+    sigs.plot(label='signature space')
     sign.plot(sigs=sigs, scene=scene)
     print('calculated',len(sigs),'signatures')
 
