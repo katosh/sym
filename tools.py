@@ -44,6 +44,7 @@ class Space():
     def __init__(self):
         self.bm   = bmesh.new()
         self.vertex_dict = {}
+        self.elem_dict = {}
         self.elements=[]
         """ size of the space e.g. [pi, pi, max offset difference] """
         self.dimensions = []
@@ -64,18 +65,23 @@ class Space():
         self.elements.sort(**kwargs)
 
     def add(self, elem):
-        self.vertex_dict[id(elem)] = self.bm.verts.new(elem.co)
+        bmvert = self.bm.verts.new(elem.co)
+        self.vertex_dict[id(elem)] = bmvert
+        self.elem_dict[id(bmvert)] = elem
         self.elements.append(elem)
 
-    def get_vertex(self, elem):
+    def get_bmvert(self, elem):
         return self.vertex_dict[id(elem)]
+
+    def get_elem(self, bmvert):
+        return self.elem_dict[id(bmvert)]
 
     def set_selected(self, elements, exlusive = True, show = True):
         if exlusive:
             for elem in self.elements:
-                self.get_vertex(elem).select = False
+                self.get_bmvert(elem).select = False
         for elem in elements:
-            self.get_vertex(elem).select = True
+            self.get_bmvert(elem).select = True
         bmesh_write(self.bm,self.obj)
 
         if show:
@@ -85,13 +91,15 @@ class Space():
     def get_selected(self):
         self.bm = bmesh_read(self.obj)
         # update dictionary
-        for i, vert in enumerate(self.bm.verts):
-            self.vertex_dict[id(self.elements[i])] = vert
+
+        for elem in self.elements
+            self.vertex_dict[id(elem)] = self.bm.verts[self.get_bmvert(elem).index]
+            self.elem_dict[id(self.get_bmvert(elem))] = elem
 
         selected = []
-        for tf in self:
-            if self.get_vertex(tf).select == True:
-                selected.append(tf)
+        for elem in self.elements:
+            if self.get_bmvert(elem).select == True:
+                selected.append(elem)
         return selected
 
     def plot(self, scene=bpy.context.scene, label="Space", matrix_world=None):
