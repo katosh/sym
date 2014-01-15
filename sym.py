@@ -12,15 +12,17 @@ def run(obj=None, **args):
     active object is taken if none is given"""
 
     # using globals to save last calculated spaces for debugging
-    global sigs, tfS, clusters, track
+    global sigs, tfS, clusters, track, matrix
 
     scene=bpy.context.scene
     if obj == None:
         obj = bpy.context.object # take active object
 
+    matrix = obj.matrix_world
+
     print('calculating signatures...')
     sigs = sign.compute(obj,**args)
-    sigs.plot(label='signature space', scene=scene, matrix_world=obj.matrix_world)
+    sigs.plot(label='signature space', scene=scene, matrix_world=matrix)
     print('calculated',len(sigs),'signatures')
 
     print('filling the transformation space...')
@@ -35,7 +37,7 @@ def run(obj=None, **args):
     clusters.plot(scene,label="clusters")
     track.plot(bpy.context.scene,label="track")
 
-    show_reflection_planes(clusters=clusters,scene=scene, matrix_world=obj.matrix_world)
+    show_reflection_planes(clusters=clusters,scene=scene, matrix_world=matrix)
 
     return sigs,tfS,clusters
 

@@ -1,6 +1,6 @@
 import bpy
 import sym
-import tools
+import verification, tools
 
 class UIPanel(bpy.types.Panel):
     bl_label = "Symmetry detection"
@@ -11,6 +11,7 @@ class UIPanel(bpy.types.Panel):
         self.layout.operator("sym.reload")
         self.layout.operator("sym.debug")
         self.layout.operator("sym.cls_to_tfs")
+        self.layout.operator("sym.tfs_to_patch")
 
 class cls_to_tfs(bpy.types.Operator):
     bl_idname = "sym.cls_to_tfs"
@@ -20,13 +21,21 @@ class cls_to_tfs(bpy.types.Operator):
         sel_tfs = [tf for cl in sel_cls for tf in cl.clusterverts]
         sym.tfS.set_selected(sel_tfs)
         return {'FINISHED'}
-        
-class tfs_to_sigs:
-    bl_idname = "sym.tfs_to_sigs"
-    bl_label = "selected tfs to sigs"    
+
+class tfs_to_patch(bpy.types.Operator):
+    bl_idname = "sym.tfs_to_patch"
+    bl_label = "selected tfs to patch"
     def execute(self, context):
         sel_tfs = sym.tfS.get_selected()
-        #sel_sigs = [tf. for tf in sel_tfs]
+        patchset = verification.tfs_to_patch(sel_tfs)
+        patch = tools.Space()
+        class Point:
+            def __init__(self,co):
+                self.co = co
+        while patchset:
+            patch.add(Point(patchset.pop().co))
+        patch.plot(matrix_world=sym.matrix)
+        return {'FINISHED'}
 
 class debug(bpy.types.Operator):
     bl_idname = "sym.debug"

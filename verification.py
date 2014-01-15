@@ -5,24 +5,6 @@ from operator import attrgetter, itemgetter
 
 ### VERIFICATION ###
 
-def showplane(plane):
-    base = plane.rnor * plane.roff
-    rme = bpy.data.meshes.new('rNormal')
-    normalverts = [base, base + g.bref.rnor]
-    normaledge = [[0, 1]]
-    rme.from_pydata(normalverts,normaledge,[])
-    ob_normal = bpy.data.objects.new("rNormal", rme)
-    g.scene.objects.link(ob_normal)
-
-    n = Vector() # plane rotation in (phi,theta,0)
-    n.xyz = (plane.co.x,
-        -plane.co.y,
-        0)
-    bpy.ops.mesh.primitive_plane_add(
-            radius=5,
-            location = base,
-            rotation=n.zyx)
-
 def show_reflection_planes(clusters=None, scene=bpy.context.scene, matrix_world=None):
     if len(clusters)==0: return
     print('the cluster densities are...')
@@ -31,6 +13,15 @@ def show_reflection_planes(clusters=None, scene=bpy.context.scene, matrix_world=
     for cl in clusters:
         print(cl.weight,'at',cl.co)
         cl.draw(scene, maxdensity=maxdens, matrix_world=matrix_world)
+
+def tfs_to_patch(tfs):
+    tfs.sort(key=attrgetter('weight'), reverse=True)
+    allocated = set()
+    for tf in tfs:
+        if not {tf.p, tf.q} & allocated: # empty intersection
+            ppatch, qpatch = grow_patch(tf, allocated)
+            allocated |= ppatch | qpatch # add sets
+    return allocated
 
 def get_patches(clusters):
     symmetries = []
