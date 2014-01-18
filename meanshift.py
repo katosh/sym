@@ -1,6 +1,6 @@
 from __future__ import print_function # overwriting progress status line
 from mathutils import Vector
-from tools import Space 
+from tools import Space
 from tools import hier_sum
 import math
 import bpy
@@ -11,20 +11,23 @@ def k(delta,bandwidth):
 def cluster(gamma,
         steps=100,
         bandwidth=0.05,
-        densitythreshold=3,
-        offset_threshold=0.0001,
-        cluster_resolution=0.01,
+        densitythreshold=0.01,
+        offset_threshold=0.000001,
+        cluster_resolution=None,
         grid_size=None,
         progress=True):
 
     if grid_size is None:
-        grid_size = bandwidth / 4
+        grid_size = bandwidth / 10
+
+    if cluster_resolution is None:
+        cluster_resolution = 2 * grid_size
 
     meanshifts=Space()
     clusters=Space()
-    checked=Space()
     track=Space()
     d=gamma.d
+    grid = dict()
 
     steplimit=0
     verbosestep = math.ceil(len(gamma)/1000) # steps before showing percentage
@@ -32,28 +35,22 @@ def cluster(gamma,
     # COMPUTE MEANSHIFT
 
     for step, g in enumerate(gamma): # starting point
-
-            #print('i jumped',d(m_old,m),'from',
-            #        m_old.co,'to',m.co,'to reach the verts')
-            #for t in test:
-            #    print(t.co,'with weight',t.weight)
-
-        done = False
-        for p in checked:
-            if abs(d(g,p)) < grid_size:
-                done = True
-                break
-        checked.add(g)
-        if done: continue
         m = g
         track.add(m)
+
         for i in range(steps): # maximal count of shift steps to guarantee termination
             weight = 0
-            m_old  = m
             sum = []
 
+            if grid_size > 0 and grid_coords(m,grid_size) in grid:
+                gridresult = grid[grid_coords(m,grid_size)]
+                m = gridresult.copy()
+                m.weight = gridresult.weight
+                break
+
+            # compute mean-shift step and weights
             for x in gamma:
-                dist = d(x, m_old)
+                dist = d(x, m)
                 if abs(dist) < bandwidth:
                     x.weight=k(abs(dist), bandwidth)
                     if dist >= 0:
@@ -61,19 +58,16 @@ def cluster(gamma,
                     else: # just for projective Space
                         sum.append((-x)*x.weight)
                     weight += x.weight
-
             if i == 0: # save the density of the original point
                 g.weight = weight
 
-            if weight != 0:
-                m = hier_sum(sum)*(1/weight)
-                checked.add(m)
-            else: # there are no more close points which is strange
-                print(step,': im lonly')
+            m_old  = m
+            m = hier_sum(sum)*(1/weight)
+            m.weight = weight
+
             normed = m.normalize()
 
             track.add(m)
-
             if not normed:
                 edge = set(track.bm.verts[j] for j in range(-2,0))
                 track.bm.edges.new(edge)
@@ -81,29 +75,31 @@ def cluster(gamma,
             if abs(d(m,m_old)) < offset_threshold:
                 break
 
-        if (i==steps-1):
-            steplimit+=1
+        if grid_size > 0:
+            for p in track:
+                grid[grid_coords(p,grid_size)] = m
+
         m.origin = g
-        m.weight = weight
         meanshifts.add(m)
 
         # report current progress
         if progress and step % verbosestep == 0:
             print(' process at',"%.1f" % (step/len(gamma)*100),'%', end='\r')
 
+        if (i==steps-1):
+            steplimit+=1
 
     if steplimit > 0: print ("reached mean shift step limit",steplimit," times. consider increasing steps")
 
-    meanshifts.sort(key=lambda x: x.weight, reverse=False)
+    meanshifts.sort(key=lambda x: x.weight, reverse=True)
 
     # COMPUTE CLUSTERS
 
     for m in meanshifts:
-        if m.weight > densitythreshold:
+        if m.weight > densitythreshold*meanshifts[0].weight:
             found=False
             for c in clusters:
                 if abs(d(c,m)) < cluster_resolution:
-                    #print ("adding",g,"to cluster",c)
                     found=True
                     c.clusterverts.add(m.origin)
                     break
@@ -113,3 +109,6 @@ def cluster(gamma,
                 clusters.add(m)
 
     return clusters, track
+
+def grid_coords(p, grid_size):
+    return tuple([math.floor(c / grid_size) for c in p.co])

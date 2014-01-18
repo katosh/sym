@@ -54,6 +54,8 @@ class Reflection:
         if normalize:
             self.normalize()
 
+    def copy(self):
+        return Reflection(co=self.co)
 
     def calc_co(self):
         self.co = Vector((

@@ -80,7 +80,7 @@ class Space():
         if exlusive:
             for elem in self.elements:
                 self.get_bmvert(elem).select = False
-        for elem in elements:
+        for elem in self.elements:
             self.get_bmvert(elem).select = True
         bmesh_write(self.bm,self.obj)
 
@@ -92,7 +92,7 @@ class Space():
         self.bm = bmesh_read(self.obj)
         # update dictionary
 
-        for elem in self.elements
+        for elem in self.elements:
             self.vertex_dict[id(elem)] = self.bm.verts[self.get_bmvert(elem).index]
             self.elem_dict[id(self.get_bmvert(elem))] = elem
 
