@@ -30,15 +30,12 @@ class Reflection:
             self.p = signature1
             self.q = signature2
 
-            co_p = signature1.vert.co
-            co_q = signature2.vert.co
-
-            self.trans = - co_p + co_q
+            self.trans = - self.p.co + self.q.co
             self.rnor = self.trans.normalized()
 
             # offset calculation in the normal direction
             # = projection of the midpoint in the normal direction
-            self.roff = self.rnor * (co_p + co_q) / 2
+            self.roff = self.rnor * (self.p.co + self.q.co) / 2
             self.calc_co()
         elif rnor!=None and roff!=None: # never called
             self.rnor = rnor
@@ -199,7 +196,7 @@ class Translation:
             self.p = signature1
             self.q = signature2
 
-            self.co = - self.p.vert.co + self.q.vert.co
+            self.co = - self.p.co + self.q.co
         elif co:
             self.co = co
         else:
@@ -235,7 +232,7 @@ def compute(sigs, maxtransformations = 500, group=Reflection):
     pairs.sort(key=lambda x: x['sim'], reverse=False)
 
     for p in pairs[:maxtransformations]:
-        if (p['a'].vert.co != p['b'].vert.co):
+        if (p['a'].co != p['b'].co):
             tfS.add(group(signature1=p['a'], signature2=p['b']))
 
     tfS.find_dimensions()

@@ -41,13 +41,22 @@ class Space():
     """ collection of points
         with methods for plotting and selection"""
 
-    def __init__(self):
+    def __init__(self, obj=None):
         self.bm   = bmesh.new()
         self.vertex_dict = {}
         self.elem_dict = {}
         self.elements=[]
         """ size of the space e.g. [pi, pi, max offset difference] """
         self.dimensions = []
+
+        if obj:
+            class Point: co=None
+            self.obj = obj
+            self.bm = bmesh_read(obj)
+            for vert in self.bm.verts:
+                elem = Point()
+                elem.co = vert.co
+                self.add(elem, vert)
 
     def __getitem__(self, arg): # allows accessing the elements directly via []
         return self.elements[arg]
@@ -64,8 +73,8 @@ class Space():
     def sort(self,**kwargs):
         self.elements.sort(**kwargs)
 
-    def add(self, elem):
-        bmvert = self.bm.verts.new(elem.co)
+    def add(self, elem, bmvert = None):
+        if not bmvert: bmvert = self.bm.verts.new(elem.co)
         self.vertex_dict[id(elem)] = bmvert
         self.elem_dict[id(bmvert)] = elem
         self.elements.append(elem)
@@ -89,6 +98,7 @@ class Space():
             bpy.ops.object.mode_set(mode='EDIT') # doesnt work
 
     def get_selected(self):
+        old_bm = self.bm
         self.bm = bmesh_read(self.obj)
         # update dictionary
 

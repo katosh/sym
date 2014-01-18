@@ -66,6 +66,7 @@ def grow_patch(tf: "Transformation", allocated=set()) -> "(set(BMVert),set(BMVer
 
     return (ppatch, qpatch)
 
-def get_neighbours(sig) -> "set(BMVert)":
-    bmvert = sig.vert
-    return set(e.other_vert(bmvert) for e in bmvert.link_edges)
+def get_neighbours(sig):
+    space = sig.space
+    bmvert = space.get_bmvert(sig)
+    return set(space.get_elem(e.other_vert(bmvert)) for e in bmvert.link_edges)
