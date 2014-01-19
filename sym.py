@@ -35,6 +35,7 @@ def run(obj=None, **args):
     clusters, track = cluster(tfS)
     print('found',len(clusters),'clusters')
     clusters.plot(scene,label="clusters")
+    clusters.obj.data.show_extra_indices = True
     track.plot(bpy.context.scene,label="track")
 
     show_reflection_planes(clusters=clusters,scene=scene, matrix_world=matrix)
@@ -43,6 +44,8 @@ def run(obj=None, **args):
 
 def debug(profile=True, **args):
     """ reload modules, invoke profiler """
+    bpy.app.debug = True
+
     rel()
     if profile:
         import cProfile, pstats, io

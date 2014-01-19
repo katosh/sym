@@ -89,7 +89,7 @@ class Space():
         if exlusive:
             for elem in self.elements:
                 self.get_bmvert(elem).select = False
-        for elem in self.elements:
+        for elem in elements:
             self.get_bmvert(elem).select = True
         bmesh_write(self.bm,self.obj)
 

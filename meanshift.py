@@ -36,6 +36,7 @@ def cluster(gamma,
 
     for step, g in enumerate(gamma): # starting point
         m = g
+        tracklength = 1 # stores the length of the current track
         track.add(m)
 
         for i in range(steps): # maximal count of shift steps to guarantee termination
@@ -67,6 +68,7 @@ def cluster(gamma,
 
             normed = m.normalize()
 
+            tracklength +=1
             track.add(m)
             if not normed:
                 edge = set(track.bm.verts[j] for j in range(-2,0))
@@ -76,7 +78,7 @@ def cluster(gamma,
                 break
 
         if grid_size > 0:
-            for p in track:
+            for p in track[-tracklength:]:
                 grid[grid_coords(p,grid_size)] = m
 
         m.origin = g
