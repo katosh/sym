@@ -41,21 +41,6 @@ def run(obj=None, **args):
     lastgamma=gamma
     return sigs,gamma,clusters
 
-def debug(profile=True, **args):
-    """ reload modules, invoke profiler """
-    rel()
-    if profile:
-        import cProfile, pstats, io
-        pr = cProfile.Profile()
-        pr.enable()
-        run(prune_perc=prune_perc, **args)
-        pr.disable()
-        s = io.StringIO()
-        ps = pstats.Stats(pr, stream=s).strip_dirs()
-        ps.sort_stats('cumulative')
-        ps.print_stats(10)
-        print(s.getvalue())
-
 def createsuzanne():
     import bmesh
     bm=bmesh.new()
@@ -88,14 +73,6 @@ def debug(profile=True, mkobj=False, **args):
         return ret
     else:
         return run(**args)
-
-def rel():
-    """ reload modules """
-    import imp, sym, signatures, transformations, meanshift
-    imp.reload(sym)
-    imp.reload(signatures)
-    imp.reload(transformations)
-    imp.reload(meanshift)
 
 ### Methods for selection, maybe put into own module
 
