@@ -23,6 +23,8 @@ def Signatures(obj, maxverts = 1000):
     waitsteps = math.ceil(steps/1000) # steps befor showing percentage
     slssteps = 0 # steps since last showing of percentage
 
+    top = math.floor(steps*0.02) # top 2%
+
     sigstemp = []
     bm = sym.get_bmesh(obj)
     for vert in verts:
@@ -31,8 +33,6 @@ def Signatures(obj, maxverts = 1000):
         sig.trans = obj.matrix_world
         sig.curv = bm.verts[vert.index].calc_shell_factor()
         sigstemp.append(sig)
-        sigstemp.sort(key=lambda x: x.curv, reverse=False) # sort by curvature
-        sigs = sigstemp[0:maxverts]
 
         """ showing process status """
         slssteps += 1
@@ -40,6 +40,9 @@ def Signatures(obj, maxverts = 1000):
             step += slssteps
             print(' process at',math.floor(1000*step/steps)/10,'%', end='\r')
             slssteps = 0
+
+    sigstemp.sort(key=lambda x: x.curv, reverse=False) # sort by curvature
+    sigs = sigstemp[top:maxverts+top]
     return sigs
 
 def plot(sigs=None, scene=bpy.context.scene):
