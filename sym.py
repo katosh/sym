@@ -42,22 +42,6 @@ def run(obj=None, **args):
 
     return sigs,tfS,clusters
 
-def debug(profile=True, **args):
-    """ reload modules, invoke profiler """
-    bpy.app.debug = True
-
-    rel()
-    if profile:
-        import cProfile, pstats, io
-        pr = cProfile.Profile()
-        pr.enable()
-        run(prune_perc=prune_perc, **args)
-        pr.disable()
-        s = io.StringIO()
-        ps = pstats.Stats(pr, stream=s).strip_dirs()
-        ps.sort_stats('cumulative')
-        ps.print_stats(10)
-        print(s.getvalue())
 
 def createsuzanne():
     import bmesh

@@ -74,8 +74,8 @@ class Reflection:
         #ob_normal = bpy.data.objects.new("rNormal", rme)
         #scene.objects.link(ob_normal)
         n = Vector() # self rotation in (phi,theta,0)
-        n.xyz = (self.co.x,
-            self.co.y,
+        n.xyz = (-self.co.x,
+            -self.co.y,
             0)
         mesh = bpy.ops.mesh.primitive_plane_add(
                 radius=2,
