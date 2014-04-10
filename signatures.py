@@ -13,8 +13,7 @@ class Signature:
 def compute(obj, progress = True):
     """ fill the signature space
         obj: the object to create the signatures of
-        curvpruning: the minimal amount of curvature to pass the pruning step
-        prune_perc: the relativy amount of vertices pruned randomly (1 will remove all vertices)"""
+        curvpruning: the minimal amount of curvature to pass the pruning step"""
 
     sigS=tools.Space(obj=obj)
 
