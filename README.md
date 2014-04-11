@@ -1,4 +1,4 @@
-To start type 'blender -P main.py' (without quotes) in your shell from the sym directory.
+To start type 'blender suzanne.blend -P main.py' (without quotes) in your shell from the sym directory.
 
 Alternatively add the sym directory to the PYTHONPATH environment variable and 'import main' from the Blender Python Console. (you have to delete all geometries or restart blender afterwards)
 
