@@ -225,7 +225,7 @@ def compute(sigs, maxtransformations = 500, group=Reflection):
     pairs=[]
     for i, a in enumerate(sigs):
         for b in sigs[i+1:]:
-            similarity = abs(a.curv - b.curv)
+            similarity = 2 * abs(a.curv - b.curv) / (a.curv + b.curv)
             pair = {'a': a, 'b': b, 'sim': similarity}
             pairs.append(pair)
 
